@@ -120,285 +120,205 @@
   }
 
   // ============================================================
-  // AUDIO ENGINE - Offline-rendered organic sounds + music
+  // AUDIO ENGINE - Real-time synthesis (no OfflineAudioContext)
+  // Works reliably on iOS Safari, Chrome Android, etc.
   // ============================================================
   let audioCtx = null;
-  let sndBark = null, sndWhimper = null, sndBurp = null, sndKO = null, sndHit = null;
-  let musicBuf = null, musicSrc = null, musicPlaying = false;
+  let musicNodes = null, musicPlaying = false;
 
-  let audioReady = false;
-  let audioInitializing = false;
-  async function initAudio() {
-    if (audioReady && audioCtx) {
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
+  // Unlock audio context — MUST be synchronous within user gesture
+  function unlockAudio() {
+    if (audioCtx) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       return;
     }
-    if (audioInitializing) return;
-    audioInitializing = true;
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      // On iOS/Safari, must resume inside user gesture
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
-      // Render all sounds
-      sndBark = await renderBark();
-      sndWhimper = await renderWhimper();
-      sndBurp = await renderBurp();
-      sndKO = await renderKO();
-      sndHit = await renderHit();
-      musicBuf = await renderMusic();
-      audioReady = true;
-    } catch(e) {
-      console.warn('Audio init failed:', e);
-      audioInitializing = false;
-    }
-  }
-  // Hook into multiple events to unlock audio on mobile
-  function tryInitAudio() { initAudio(); }
-  document.addEventListener('click', tryInitAudio);
-  document.addEventListener('touchstart', tryInitAudio);
-  document.addEventListener('touchend', tryInitAudio);
-  document.addEventListener('keydown', tryInitAudio);
-
-  function playSnd(buf, vol = 1) {
-    if (!audioCtx || !buf) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Play silent buffer to unlock iOS
+    const buf = audioCtx.createBuffer(1, 1, 22050);
     const s = audioCtx.createBufferSource();
-    const g = audioCtx.createGain();
-    g.gain.value = vol;
-    s.buffer = buf; s.connect(g); g.connect(audioCtx.destination);
-    s.start();
+    s.buffer = buf;
+    s.connect(audioCtx.destination);
+    s.start(0);
+    if (audioCtx.state === 'suspended') audioCtx.resume();
   }
-  function playBark() { playSnd(sndBark, 0.6); }
-  function playWhimper() { playSnd(sndWhimper, 0.5); }
-  function playBurp() { playSnd(sndBurp, 0.5); }
-  function playKO() { playSnd(sndKO, 0.4); }
-  function playHit() { playSnd(sndHit, 0.3); }
 
-  let musicQueued = false;
-  function startMusic() {
-    if (musicPlaying) return;
-    if (!audioCtx || !musicBuf) {
-      // Audio not ready yet — queue it and try again shortly
-      musicQueued = true;
-      return;
+  // Hook unlock into every possible user gesture
+  function tryUnlock() { unlockAudio(); }
+  document.addEventListener('touchstart', tryUnlock, { passive: false });
+  document.addEventListener('touchend', tryUnlock);
+  document.addEventListener('click', tryUnlock);
+  document.addEventListener('keydown', tryUnlock);
+
+  // --- BARK: pitched-down sawtooth burst ---
+  function playBark() {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(400, t);
+    osc.frequency.exponentialRampToValueAtTime(180, t + 0.12);
+    osc.frequency.exponentialRampToValueAtTime(300, t + 0.16);
+    osc.frequency.exponentialRampToValueAtTime(100, t + 0.28);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.linearRampToValueAtTime(0.5, t + 0.015);
+    g.gain.linearRampToValueAtTime(0.35, t + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.35);
+  }
+
+  // --- WHIMPER: descending sine whines ---
+  function playWhimper() {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    for (let i = 0; i < 3; i++) {
+      const st = t + i * 0.12;
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      const f = 800 - i * 100;
+      osc.frequency.setValueAtTime(f, st);
+      osc.frequency.exponentialRampToValueAtTime(f * 0.45, st + 0.11);
+      const lfo = audioCtx.createOscillator();
+      lfo.frequency.value = 25;
+      const lfoG = audioCtx.createGain();
+      lfoG.gain.value = 25;
+      lfo.connect(lfoG); lfoG.connect(osc.frequency);
+      lfo.start(st); lfo.stop(st + 0.12);
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.001, st);
+      g.gain.linearRampToValueAtTime(0.2, st + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.001, st + 0.11);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(st); osc.stop(st + 0.12);
     }
-    musicSrc = audioCtx.createBufferSource();
-    const g = audioCtx.createGain(); g.gain.value = 0.18;
-    musicSrc.buffer = musicBuf; musicSrc.loop = true;
-    musicSrc.connect(g); g.connect(audioCtx.destination);
-    musicSrc.start(); musicPlaying = true;
-    musicQueued = false;
+  }
+
+  // --- BURP: low rumble with wobble ---
+  function playBurp() {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(110, t);
+    osc.frequency.exponentialRampToValueAtTime(50, t + 0.15);
+    osc.frequency.exponentialRampToValueAtTime(70, t + 0.2);
+    osc.frequency.exponentialRampToValueAtTime(35, t + 0.38);
+    const lfo = audioCtx.createOscillator();
+    lfo.frequency.value = 12;
+    const lfoG = audioCtx.createGain();
+    lfoG.gain.value = 20;
+    lfo.connect(lfoG); lfoG.connect(osc.frequency);
+    lfo.start(t); lfo.stop(t + 0.4);
+    const lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(250, t);
+    lp.frequency.exponentialRampToValueAtTime(80, t + 0.3);
+    lp.Q.value = 5;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.linearRampToValueAtTime(0.45, t + 0.025);
+    g.gain.linearRampToValueAtTime(0.3, t + 0.15);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+    osc.connect(lp); lp.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.4);
+  }
+
+  // --- KO: impact thud ---
+  function playKO() {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, t);
+    osc.frequency.exponentialRampToValueAtTime(35, t + 0.15);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.4, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.35);
+  }
+
+  // --- HIT: lighter tap ---
+  function playHit() {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(280, t);
+    osc.frequency.exponentialRampToValueAtTime(90, t + 0.08);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.3, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.18);
+  }
+
+  // --- MUSIC: real-time chiptune loop using scheduling ---
+  let musicInterval = null;
+  function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+  const melodyNotes = [72,72,74,76, 76,74,72,71, 69,69,71,72, 72,71,71,0, 72,72,74,76, 76,74,72,71, 69,69,71,72, 71,69,69,0];
+  const bassNotes =   [48,0,48,0, 45,0,45,0, 43,0,43,0, 45,0,47,0, 48,0,48,0, 45,0,45,0, 43,0,43,0, 45,0,45,0];
+  const BPM = 140, BEAT_LEN = 60 / BPM;
+  let musicBeatIdx = 0, nextBeatTime = 0;
+
+  function scheduleMusicBeat() {
+    if (!audioCtx || !musicPlaying) return;
+    const i = musicBeatIdx % melodyNotes.length;
+    const t = nextBeatTime;
+    // Melody
+    if (melodyNotes[i] !== 0) {
+      const osc = audioCtx.createOscillator(); osc.type = 'square';
+      osc.frequency.value = midiToFreq(melodyNotes[i]);
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.1, t);
+      g.gain.setValueAtTime(0.1, t + BEAT_LEN * 0.75);
+      g.gain.linearRampToValueAtTime(0.0, t + BEAT_LEN * 0.9);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + BEAT_LEN);
+    }
+    // Bass
+    if (bassNotes[i] !== 0) {
+      const osc = audioCtx.createOscillator(); osc.type = 'triangle';
+      osc.frequency.value = midiToFreq(bassNotes[i]);
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + BEAT_LEN * 0.85);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + BEAT_LEN);
+    }
+    // Kick on even beats
+    if (i % 2 === 0) {
+      const osc = audioCtx.createOscillator(); osc.type = 'sine';
+      osc.frequency.setValueAtTime(140, t);
+      osc.frequency.exponentialRampToValueAtTime(35, t + 0.08);
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.15, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.12);
+    }
+    musicBeatIdx++;
+    nextBeatTime += BEAT_LEN;
+  }
+
+  function startMusic() {
+    if (musicPlaying || !audioCtx) return;
+    musicPlaying = true;
+    musicBeatIdx = 0;
+    nextBeatTime = audioCtx.currentTime + 0.1;
+    // Schedule ahead using setInterval — simple and reliable
+    musicInterval = setInterval(() => {
+      if (!musicPlaying || !audioCtx) return;
+      // Schedule beats up to 0.3s ahead
+      while (nextBeatTime < audioCtx.currentTime + 0.3) {
+        scheduleMusicBeat();
+      }
+    }, 80);
   }
   function stopMusic() {
-    musicQueued = false;
-    if (musicSrc) { try { musicSrc.stop(); } catch(e){} musicPlaying = false; }
-  }
-  // Periodically check if queued music can start
-  setInterval(() => { if (musicQueued && audioReady && gameState === 'playing') startMusic(); }, 200);
-
-  // --- Offline render helpers ---
-  function offlineRender(dur, fn) {
-    const sr = 44100;
-    const oc = new OfflineAudioContext(1, sr * dur, sr);
-    fn(oc, sr, dur);
-    return oc.startRendering();
-  }
-
-  function renderBark() {
-    return offlineRender(0.35, (oc, sr, dur) => {
-      const len = sr * dur;
-      const nBuf = oc.createBuffer(1, len, sr);
-      const nData = nBuf.getChannelData(0);
-      for (let i = 0; i < len; i++) nData[i] = Math.random() * 2 - 1;
-      const noise = oc.createBufferSource(); noise.buffer = nBuf;
-      const bp = oc.createBiquadFilter(); bp.type = 'bandpass';
-      bp.frequency.setValueAtTime(800, 0);
-      bp.frequency.exponentialRampToValueAtTime(400, 0.12);
-      bp.frequency.exponentialRampToValueAtTime(600, 0.18);
-      bp.frequency.exponentialRampToValueAtTime(250, 0.3);
-      bp.Q.value = 3;
-      const bp2 = oc.createBiquadFilter(); bp2.type = 'bandpass';
-      bp2.frequency.setValueAtTime(1800, 0);
-      bp2.frequency.exponentialRampToValueAtTime(1200, 0.15);
-      bp2.Q.value = 2;
-      const osc = oc.createOscillator(); osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(420, 0);
-      osc.frequency.exponentialRampToValueAtTime(200, 0.08);
-      osc.frequency.exponentialRampToValueAtTime(350, 0.13);
-      osc.frequency.exponentialRampToValueAtTime(150, 0.28);
-      const og = oc.createGain();
-      og.gain.setValueAtTime(0.3, 0);
-      og.gain.exponentialRampToValueAtTime(0.01, 0.3);
-      osc.connect(og); og.connect(bp);
-      const env = oc.createGain();
-      env.gain.setValueAtTime(0.01, 0);
-      env.gain.linearRampToValueAtTime(0.8, 0.015);
-      env.gain.linearRampToValueAtTime(0.6, 0.06);
-      env.gain.linearRampToValueAtTime(0.4, 0.15);
-      env.gain.exponentialRampToValueAtTime(0.01, 0.32);
-      const mix = oc.createGain(); mix.gain.value = 1;
-      noise.connect(bp); bp.connect(env);
-      noise.connect(bp2); bp2.connect(env);
-      env.connect(mix); mix.connect(oc.destination);
-      noise.start(0); osc.start(0);
-    });
-  }
-
-  function renderWhimper() {
-    return offlineRender(0.6, (oc, sr) => {
-      for (let i = 0; i < 3; i++) {
-        const t = i * 0.15;
-        const osc = oc.createOscillator(); osc.type = 'sine';
-        const baseF = 900 - i * 120;
-        osc.frequency.setValueAtTime(baseF, t);
-        osc.frequency.exponentialRampToValueAtTime(baseF * 0.5, t + 0.14);
-        const lfo = oc.createOscillator(); lfo.frequency.value = 25;
-        const lfoG = oc.createGain(); lfoG.gain.value = 30;
-        lfo.connect(lfoG); lfoG.connect(osc.frequency);
-        lfo.start(t); lfo.stop(t + 0.15);
-        const g = oc.createGain();
-        g.gain.setValueAtTime(0.01, t);
-        g.gain.linearRampToValueAtTime(0.25, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.01, t + 0.14);
-        osc.connect(g); g.connect(oc.destination);
-        osc.start(t); osc.stop(t + 0.15);
-        const nLen = sr * 0.12;
-        const nBuf = oc.createBuffer(1, nLen, sr);
-        const nD = nBuf.getChannelData(0);
-        for (let j = 0; j < nLen; j++) nD[j] = (Math.random() * 2 - 1) * 0.08;
-        const ns = oc.createBufferSource(); ns.buffer = nBuf;
-        const nbp = oc.createBiquadFilter(); nbp.type = 'bandpass'; nbp.frequency.value = 2000; nbp.Q.value = 1;
-        const ng = oc.createGain();
-        ng.gain.setValueAtTime(0.15, t); ng.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
-        ns.connect(nbp); nbp.connect(ng); ng.connect(oc.destination);
-        ns.start(t);
-      }
-    });
-  }
-
-  function renderBurp() {
-    return offlineRender(0.5, (oc, sr) => {
-      const len = sr * 0.45;
-      const nBuf = oc.createBuffer(1, len, sr);
-      const nD = nBuf.getChannelData(0);
-      for (let i = 0; i < len; i++) nD[i] = Math.random() * 2 - 1;
-      const ns = oc.createBufferSource(); ns.buffer = nBuf;
-      const lp = oc.createBiquadFilter(); lp.type = 'lowpass';
-      lp.frequency.setValueAtTime(300, 0);
-      lp.frequency.exponentialRampToValueAtTime(100, 0.3);
-      lp.Q.value = 8;
-      const osc = oc.createOscillator(); osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(120, 0);
-      osc.frequency.exponentialRampToValueAtTime(55, 0.15);
-      osc.frequency.exponentialRampToValueAtTime(80, 0.22);
-      osc.frequency.exponentialRampToValueAtTime(40, 0.4);
-      const lfo = oc.createOscillator(); lfo.frequency.value = 12;
-      const lfoG = oc.createGain(); lfoG.gain.value = 60;
-      lfo.connect(lfoG); lfoG.connect(lp.frequency);
-      lfo.start(0);
-      const env = oc.createGain();
-      env.gain.setValueAtTime(0.01, 0);
-      env.gain.linearRampToValueAtTime(0.6, 0.03);
-      env.gain.linearRampToValueAtTime(0.4, 0.15);
-      env.gain.exponentialRampToValueAtTime(0.01, 0.42);
-      const og = oc.createGain(); og.gain.value = 0.35;
-      osc.connect(og); og.connect(lp);
-      ns.connect(lp); lp.connect(env); env.connect(oc.destination);
-      ns.start(0); osc.start(0);
-    });
-  }
-
-  function renderKO() {
-    return offlineRender(0.4, (oc, sr) => {
-      const osc = oc.createOscillator(); osc.type = 'sine';
-      osc.frequency.setValueAtTime(200, 0);
-      osc.frequency.exponentialRampToValueAtTime(40, 0.15);
-      const g = oc.createGain();
-      g.gain.setValueAtTime(0.5, 0); g.gain.exponentialRampToValueAtTime(0.01, 0.35);
-      osc.connect(g); g.connect(oc.destination); osc.start(0);
-      const nBuf = oc.createBuffer(1, sr * 0.08, sr);
-      const nD = nBuf.getChannelData(0);
-      for (let i = 0; i < nD.length; i++) nD[i] = (Math.random() * 2 - 1);
-      const ns = oc.createBufferSource(); ns.buffer = nBuf;
-      const ng = oc.createGain();
-      ng.gain.setValueAtTime(0.25, 0); ng.gain.exponentialRampToValueAtTime(0.01, 0.08);
-      ns.connect(ng); ng.connect(oc.destination); ns.start(0);
-    });
-  }
-
-  function renderHit() {
-    return offlineRender(0.2, (oc, sr) => {
-      const osc = oc.createOscillator(); osc.type = 'triangle';
-      osc.frequency.setValueAtTime(300, 0);
-      osc.frequency.exponentialRampToValueAtTime(100, 0.1);
-      const g = oc.createGain();
-      g.gain.setValueAtTime(0.4, 0); g.gain.exponentialRampToValueAtTime(0.01, 0.18);
-      osc.connect(g); g.connect(oc.destination); osc.start(0);
-    });
-  }
-
-  function renderMusic() {
-    const bpm = 140, beatLen = 60 / bpm;
-    const bars = 8, totalBeats = bars * 4;
-    const dur = totalBeats * beatLen;
-    return offlineRender(dur, (oc, sr) => {
-      const melody = [
-        72,72,74,76, 76,74,72,71, 69,69,71,72, 72,71,71,0,
-        72,72,74,76, 76,74,72,71, 69,69,71,72, 71,69,69,0,
-      ];
-      const bass = [
-        48,0,48,0, 45,0,45,0, 43,0,43,0, 45,0,47,0,
-        48,0,48,0, 45,0,45,0, 43,0,43,0, 45,0,45,0,
-      ];
-      function midiToFreq(m) { return m === 0 ? 0 : 440 * Math.pow(2, (m - 69) / 12); }
-      for (let i = 0; i < melody.length; i++) {
-        if (melody[i] === 0) continue;
-        const t = i * beatLen;
-        const osc = oc.createOscillator(); osc.type = 'square';
-        osc.frequency.value = midiToFreq(melody[i]);
-        const g = oc.createGain();
-        g.gain.setValueAtTime(0.12, t);
-        g.gain.setValueAtTime(0.12, t + beatLen * 0.8);
-        g.gain.linearRampToValueAtTime(0.0, t + beatLen * 0.95);
-        osc.connect(g); g.connect(oc.destination);
-        osc.start(t); osc.stop(t + beatLen);
-      }
-      for (let i = 0; i < bass.length; i++) {
-        if (bass[i] === 0) continue;
-        const t = i * beatLen;
-        const osc = oc.createOscillator(); osc.type = 'triangle';
-        osc.frequency.value = midiToFreq(bass[i]);
-        const g = oc.createGain();
-        g.gain.setValueAtTime(0.15, t);
-        g.gain.exponentialRampToValueAtTime(0.01, t + beatLen * 0.9);
-        osc.connect(g); g.connect(oc.destination);
-        osc.start(t); osc.stop(t + beatLen);
-      }
-      for (let i = 0; i < totalBeats * 2; i++) {
-        const t = i * beatLen * 0.5;
-        const nBuf = oc.createBuffer(1, sr * 0.03, sr);
-        const nD = nBuf.getChannelData(0);
-        for (let j = 0; j < nD.length; j++) nD[j] = (Math.random() * 2 - 1);
-        const ns = oc.createBufferSource(); ns.buffer = nBuf;
-        const hp = oc.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8000;
-        const g = oc.createGain();
-        g.gain.setValueAtTime(i % 2 === 0 ? 0.06 : 0.03, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
-        ns.connect(hp); hp.connect(g); g.connect(oc.destination);
-        ns.start(t);
-      }
-      for (let i = 0; i < totalBeats; i++) {
-        if (i % 2 !== 0) continue;
-        const t = i * beatLen;
-        const osc = oc.createOscillator(); osc.type = 'sine';
-        osc.frequency.setValueAtTime(150, t);
-        osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
-        const g = oc.createGain();
-        g.gain.setValueAtTime(0.2, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-        osc.connect(g); g.connect(oc.destination);
-        osc.start(t); osc.stop(t + 0.15);
-      }
-    });
+    musicPlaying = false;
+    if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
   }
 
   // ============================================================
@@ -622,10 +542,10 @@
   // Attack button
   const btnAttack = document.getElementById('btn-attack');
   if (btnAttack) {
-    btnAttack.addEventListener('touchstart', async e => {
+    btnAttack.addEventListener('touchstart', e => {
       e.preventDefault();
       btnAttack.classList.add('pressed');
-      await initAudio();
+      unlockAudio();
       if (gameState === 'title') { startGame(); return; }
       if (gameState !== 'playing') { startGame(); return; }
       if (!player.attacking) {
@@ -639,9 +559,9 @@
   }
 
   // Tap on canvas to start/restart or attack
-  canvas.addEventListener('touchstart', async e => {
+  canvas.addEventListener('touchstart', e => {
     e.preventDefault();
-    await initAudio();
+    unlockAudio();
     if (gameState === 'title') { startGame(); return; }
     if (gameState !== 'playing') { startGame(); return; }
     // Tap on canvas = bark attack (alternative to button)
