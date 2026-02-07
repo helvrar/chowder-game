@@ -2,29 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Chowder's Singapore Adventure</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
+  html, body {
     background: #111;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    height: 100dvh;
+    width: 100%; height: 100%;
+    overflow: hidden;
     font-family: monospace;
     color: #e0e0e0;
-    overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
     -webkit-touch-callout: none;
   }
-  canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
-  #controls { margin-top: 4px; font-size: 10px; color: #666; }
-  /* Mobile touch overlay */
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    height: 100dvh;
+  }
+  canvas {
+    image-rendering: pixelated; image-rendering: crisp-edges;
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  #controls { position: fixed; bottom: 4px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #666; z-index: 5; }
+  /* Mobile touch overlay - sits on top of full-screen canvas */
   #touch-ui {
     display: none;
     position: fixed;
@@ -32,33 +40,50 @@
     height: 130px;
     pointer-events: none;
     z-index: 10;
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
-  #touch-ui.active { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 16px 16px; }
+  #touch-ui.active { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 20px 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0)); }
   .touch-btn {
     pointer-events: auto;
     width: 64px; height: 64px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.18);
+    border: 2px solid rgba(255,255,255,0.35);
     display: flex; align-items: center; justify-content: center;
-    font-size: 28px; color: rgba(255,255,255,0.7);
+    font-size: 28px; color: rgba(255,255,255,0.75);
     -webkit-tap-highlight-color: transparent;
     transition: background 0.05s;
   }
-  .touch-btn:active, .touch-btn.pressed { background: rgba(255,255,255,0.35); }
+  .touch-btn:active, .touch-btn.pressed { background: rgba(255,255,255,0.45); }
   #dpad { display: flex; flex-direction: column; gap: 8px; }
   #btn-attack {
-    width: 80px; height: 80px; font-size: 16px; font-weight: bold;
-    background: rgba(240,192,64,0.25);
-    border-color: rgba(240,192,64,0.5);
-    color: rgba(240,192,64,0.85);
+    width: 84px; height: 84px; font-size: 17px; font-weight: bold;
+    background: rgba(240,192,64,0.3);
+    border-color: rgba(240,192,64,0.55);
+    color: rgba(240,192,64,0.9);
   }
+  /* Landscape prompt overlay */
+  #rotate-prompt {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: #111;
+    z-index: 100;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #f0c040; font-family: monospace; font-size: 18px; text-align: center;
+  }
+  #rotate-prompt .icon { font-size: 60px; margin-bottom: 16px; }
+  @media (max-width: 900px) and (orientation: portrait) {
+    #rotate-prompt { display: flex !important; }
+  }
+  /* Hide touch UI on desktop */
   @media (min-width: 800px) and (hover: hover) {
     #touch-ui.active { display: none; }
   }
 </style>
 </head>
 <body>
+<div id="rotate-prompt"><div class="icon">📱↪️</div>Rotate your phone sideways<br>to play!</div>
 <canvas id="game" width="800" height="500"></canvas>
 <div id="controls">Arrows: Move | Space: Bark Attack | R: Restart</div>
 <div id="touch-ui">
@@ -75,34 +100,16 @@
   let W = 800, H = 500;
 
   // ============================================================
-  // RESPONSIVE CANVAS
+  // RESPONSIVE CANVAS - Full screen, landscape
   // ============================================================
-  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || ('ontouchstart' in window && window.innerWidth < 900);
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || ('ontouchstart' in window);
   const touchUI = document.getElementById('touch-ui');
   const controlsDiv = document.getElementById('controls');
 
+  // Canvas always fills the full viewport
   function resizeCanvas() {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const targetRatio = 800 / 500;
-    let cw, ch;
-    if (vw / vh > targetRatio) {
-      ch = vh;
-      cw = ch * targetRatio;
-    } else {
-      cw = vw;
-      ch = cw / targetRatio;
-    }
-    // On mobile, shrink canvas to leave room for touch buttons
-    if (isMobile) {
-      const maxH = vh - 120;
-      if (ch > maxH) {
-        ch = maxH;
-        cw = ch * targetRatio;
-      }
-    }
-    canvas.style.width = Math.floor(cw) + 'px';
-    canvas.style.height = Math.floor(ch) + 'px';
+    // CSS handles 100% fill; no need to change style dimensions
+    // Canvas element stays at 800x500 internal resolution, CSS stretches it
   }
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
@@ -119,19 +126,38 @@
   let sndBark = null, sndWhimper = null, sndBurp = null, sndKO = null, sndHit = null;
   let musicBuf = null, musicSrc = null, musicPlaying = false;
 
+  let audioReady = false;
+  let audioInitializing = false;
   async function initAudio() {
-    if (audioCtx) { if (audioCtx.state === 'suspended') audioCtx.resume(); return; }
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    sndBark = await renderBark();
-    sndWhimper = await renderWhimper();
-    sndBurp = await renderBurp();
-    sndKO = await renderKO();
-    sndHit = await renderHit();
-    musicBuf = await renderMusic();
+    if (audioReady && audioCtx) {
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      return;
+    }
+    if (audioInitializing) return;
+    audioInitializing = true;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // On iOS/Safari, must resume inside user gesture
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      // Render all sounds
+      sndBark = await renderBark();
+      sndWhimper = await renderWhimper();
+      sndBurp = await renderBurp();
+      sndKO = await renderKO();
+      sndHit = await renderHit();
+      musicBuf = await renderMusic();
+      audioReady = true;
+    } catch(e) {
+      console.warn('Audio init failed:', e);
+      audioInitializing = false;
+    }
   }
-  document.addEventListener('click', initAudio, { once: false });
-  document.addEventListener('touchstart', initAudio, { once: false });
-  document.addEventListener('keydown', () => initAudio(), { once: true });
+  // Hook into multiple events to unlock audio on mobile
+  function tryInitAudio() { initAudio(); }
+  document.addEventListener('click', tryInitAudio);
+  document.addEventListener('touchstart', tryInitAudio);
+  document.addEventListener('touchend', tryInitAudio);
+  document.addEventListener('keydown', tryInitAudio);
 
   function playSnd(buf, vol = 1) {
     if (!audioCtx || !buf) return;
@@ -147,17 +173,27 @@
   function playKO() { playSnd(sndKO, 0.4); }
   function playHit() { playSnd(sndHit, 0.3); }
 
+  let musicQueued = false;
   function startMusic() {
-    if (!audioCtx || !musicBuf || musicPlaying) return;
+    if (musicPlaying) return;
+    if (!audioCtx || !musicBuf) {
+      // Audio not ready yet — queue it and try again shortly
+      musicQueued = true;
+      return;
+    }
     musicSrc = audioCtx.createBufferSource();
     const g = audioCtx.createGain(); g.gain.value = 0.18;
     musicSrc.buffer = musicBuf; musicSrc.loop = true;
     musicSrc.connect(g); g.connect(audioCtx.destination);
     musicSrc.start(); musicPlaying = true;
+    musicQueued = false;
   }
   function stopMusic() {
+    musicQueued = false;
     if (musicSrc) { try { musicSrc.stop(); } catch(e){} musicPlaying = false; }
   }
+  // Periodically check if queued music can start
+  setInterval(() => { if (musicQueued && audioReady && gameState === 'playing') startMusic(); }, 200);
 
   // --- Offline render helpers ---
   function offlineRender(dur, fn) {
@@ -586,10 +622,10 @@
   // Attack button
   const btnAttack = document.getElementById('btn-attack');
   if (btnAttack) {
-    btnAttack.addEventListener('touchstart', e => {
+    btnAttack.addEventListener('touchstart', async e => {
       e.preventDefault();
       btnAttack.classList.add('pressed');
-      initAudio();
+      await initAudio();
       if (gameState === 'title') { startGame(); return; }
       if (gameState !== 'playing') { startGame(); return; }
       if (!player.attacking) {
@@ -603,9 +639,9 @@
   }
 
   // Tap on canvas to start/restart or attack
-  canvas.addEventListener('touchstart', e => {
+  canvas.addEventListener('touchstart', async e => {
     e.preventDefault();
-    initAudio();
+    await initAudio();
     if (gameState === 'title') { startGame(); return; }
     if (gameState !== 'playing') { startGame(); return; }
     // Tap on canvas = bark attack (alternative to button)
@@ -638,8 +674,8 @@
       y: FLOOR_TOP + 20 + Math.random() * (FLOOR_BOT - FLOOR_TOP - 40),
       alive: true, af: 0, at: 0,
       spd: isThug ? 0.3 : (0.4 + Math.random() * 0.7),
-      hp: isThug ? 3 : 1,
-      maxHp: isThug ? 3 : 1,
+      hp: isThug ? 2 : 1,
+      maxHp: isThug ? 2 : 1,
       isThug: isThug,
       variant: variant,
       hitFlash: 0,
