@@ -352,7 +352,17 @@
     nextBeatTime = audioCtx.currentTime + 0.05;
     musicInterval = setInterval(() => {
       if (!musicPlaying || !audioCtx) return;
-      while (nextBeatTime < audioCtx.currentTime + 0.3) scheduleMusicBeat();
+      // Guard: if audio isn't ready yet, just update nextBeatTime to stay current
+      if (!audioReady()) {
+        nextBeatTime = audioCtx.currentTime + 0.05;
+        return;
+      }
+      // Safety limit to prevent infinite loop if nextBeatTime falls behind
+      let safety = 0;
+      while (nextBeatTime < audioCtx.currentTime + 0.3 && safety < 20) {
+        scheduleMusicBeat();
+        safety++;
+      }
     }, 80);
   }
   function stopMusic() {
