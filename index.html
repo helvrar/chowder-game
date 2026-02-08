@@ -307,41 +307,41 @@
   const BPM = 140, BEAT_LEN = 60 / BPM;
   let musicBeatIdx = 0, nextBeatTime = 0;
 
-  function scheduleMusicBeat() {
-    if (!audioReady() || !musicPlaying) return;
+  function scheduleMusicBeat(t) {
+    if (!audioCtx) return;
     const i = musicBeatIdx % melodyNotes.length;
-    const t = nextBeatTime;
-    if (melodyNotes[i] !== 0) {
-      const osc = audioCtx.createOscillator(); osc.type = 'square';
-      osc.frequency.value = midiToFreq(melodyNotes[i]);
-      const g = audioCtx.createGain();
-      g.gain.setValueAtTime(0.1, t);
-      g.gain.setValueAtTime(0.1, t + BEAT_LEN * 0.75);
-      g.gain.linearRampToValueAtTime(0.0, t + BEAT_LEN * 0.9);
-      osc.connect(g); g.connect(audioCtx.destination);
-      osc.start(t); osc.stop(t + BEAT_LEN);
-    }
-    if (bassNotes[i] !== 0) {
-      const osc = audioCtx.createOscillator(); osc.type = 'triangle';
-      osc.frequency.value = midiToFreq(bassNotes[i]);
-      const g = audioCtx.createGain();
-      g.gain.setValueAtTime(0.12, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + BEAT_LEN * 0.85);
-      osc.connect(g); g.connect(audioCtx.destination);
-      osc.start(t); osc.stop(t + BEAT_LEN);
-    }
-    if (i % 2 === 0) {
-      const osc = audioCtx.createOscillator(); osc.type = 'sine';
-      osc.frequency.setValueAtTime(140, t);
-      osc.frequency.exponentialRampToValueAtTime(35, t + 0.08);
-      const g = audioCtx.createGain();
-      g.gain.setValueAtTime(0.15, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-      osc.connect(g); g.connect(audioCtx.destination);
-      osc.start(t); osc.stop(t + 0.12);
-    }
+    try {
+      if (melodyNotes[i] !== 0) {
+        const osc = audioCtx.createOscillator(); osc.type = 'square';
+        osc.frequency.value = midiToFreq(melodyNotes[i]);
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(0.1, t);
+        g.gain.setValueAtTime(0.1, t + BEAT_LEN * 0.75);
+        g.gain.linearRampToValueAtTime(0.0, t + BEAT_LEN * 0.9);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start(t); osc.stop(t + BEAT_LEN);
+      }
+      if (bassNotes[i] !== 0) {
+        const osc = audioCtx.createOscillator(); osc.type = 'triangle';
+        osc.frequency.value = midiToFreq(bassNotes[i]);
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + BEAT_LEN * 0.85);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start(t); osc.stop(t + BEAT_LEN);
+      }
+      if (i % 2 === 0) {
+        const osc = audioCtx.createOscillator(); osc.type = 'sine';
+        osc.frequency.setValueAtTime(140, t);
+        osc.frequency.exponentialRampToValueAtTime(35, t + 0.08);
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(0.15, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start(t); osc.stop(t + 0.12);
+      }
+    } catch(e) {} // Silently skip if audio node creation fails
     musicBeatIdx++;
-    nextBeatTime += BEAT_LEN;
   }
 
   function startMusic() {
@@ -349,21 +349,15 @@
     if (!audioCtx) { unlockAudio(); if (!audioCtx) return; }
     musicPlaying = true;
     musicBeatIdx = 0;
-    nextBeatTime = audioCtx.currentTime + 0.05;
+    // Simple approach: schedule one beat at a time, no while loop
     musicInterval = setInterval(() => {
       if (!musicPlaying || !audioCtx) return;
-      // Guard: if audio isn't ready yet, just update nextBeatTime to stay current
-      if (!audioReady()) {
-        nextBeatTime = audioCtx.currentTime + 0.05;
-        return;
-      }
-      // Safety limit to prevent infinite loop if nextBeatTime falls behind
-      let safety = 0;
-      while (nextBeatTime < audioCtx.currentTime + 0.3 && safety < 20) {
-        scheduleMusicBeat();
-        safety++;
-      }
-    }, 80);
+      if (audioCtx.state !== 'running') return; // Skip silently, no loops
+      try {
+        const t = audioCtx.currentTime + 0.05; // Schedule slightly ahead
+        scheduleMusicBeat(t);
+      } catch(e) {}
+    }, Math.round(BEAT_LEN * 1000)); // Fire once per beat
   }
   function stopMusic() {
     musicPlaying = false;
