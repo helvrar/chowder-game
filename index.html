@@ -105,68 +105,56 @@
   if (isMobile) { touchUI.classList.add('active'); controlsDiv.style.display = 'none'; }
 
   // ============================================================
-  // AUDIO ENGINE - Real-time with bulletproof iOS/mobile unlock
-  // Uses multiple unlock strategies for maximum compatibility
+  // AUDIO ENGINE - iOS/mobile unlock using HTML Audio + WebAudio
+  // Based on proven patterns from unmute-ios-audio library
   // ============================================================
-  let audioCtx = null;
-  let audioUnlocked = false;
   let musicPlaying = false, musicInterval = null;
 
-  // Strategy: Create AudioContext + play real oscillator (not just silent buffer)
-  // iOS Safari requires REAL audio output in a user gesture to unlock
+  // Step 1: Create AudioContext EAGERLY at page load (before gestures)
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = AC ? new AC() : null;
+
+  // Step 2: Create a tiny silent WAV as a data URI for HTML <audio> trick
+  // This is a valid 44-byte WAV file: 1 sample of silence
+  const silentDataURI = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+  const silentAudio = document.createElement('audio');
+  silentAudio.setAttribute('playsinline', '');
+  silentAudio.src = silentDataURI;
+
+  // Step 3: Unlock function — called on EVERY user gesture
+  // Uses THREE strategies simultaneously for maximum iOS compatibility:
+  // 1. audioCtx.resume()
+  // 2. HTML <audio> element .play()
+  // 3. WebAudio oscillator playback
   function unlockAudio() {
-    try {
-      // Create context if needed
-      if (!audioCtx) {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return;
-        audioCtx = new AC();
-      }
-
-      // Handle suspended or interrupted (iOS-specific state)
-      if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
-        audioCtx.resume();
-      }
-
-      // If already unlocked, no need to do the unlock dance again
-      if (audioUnlocked) return;
-
-      // Play a REAL (but inaudible) oscillator — this is more reliable than
-      // a silent buffer for unlocking iOS Safari audio
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      gain.gain.value = 0.001; // Nearly silent but not zero
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(0);
-      osc.stop(audioCtx.currentTime + 0.05);
-
-      // ALSO play a buffer source (belt-and-suspenders approach)
-      const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
-      const src = audioCtx.createBufferSource();
-      src.buffer = buf;
-      src.connect(audioCtx.destination);
-      src.start(0);
-
-      // Mark as unlocked after a successful play
-      audioUnlocked = true;
-    } catch(e) {
-      // Silently fail — will try again on next gesture
+    if (!audioCtx) return;
+    // Strategy 1: Resume the AudioContext
+    if (audioCtx.state !== 'running') {
+      audioCtx.resume();
     }
+    // Strategy 2: Play silent audio via HTML <audio> element
+    // This is what actually unlocks audio on many iOS versions
+    try { silentAudio.play().catch(function(){}); } catch(e) {}
+    // Strategy 3: Play a tiny oscillator through WebAudio
+    try {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      g.gain.value = 0.001;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(0); o.stop(audioCtx.currentTime + 0.001);
+    } catch(e) {}
   }
 
-  // Attach to EVERY possible user gesture event
-  // Using both capture and bubble phases for maximum coverage
+  // Attach to ALL user gesture events — both touchstart AND touchend
+  // (some iOS versions only unlock on touchend, not touchstart)
   ['touchstart','touchend','mousedown','click','keydown'].forEach(evt => {
     document.addEventListener(evt, unlockAudio, { capture: true, passive: true });
   });
 
-  // Also listen for visibility changes (iOS pauses audio when tab is backgrounded)
+  // Handle iOS backgrounding/foregrounding
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && audioCtx) {
-      if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
-        audioCtx.resume();
-      }
+    if (document.visibilityState === 'visible' && audioCtx && audioCtx.state !== 'running') {
+      audioCtx.resume();
     }
   });
 
@@ -346,7 +334,7 @@
 
   function startMusic() {
     if (musicPlaying) return;
-    if (!audioCtx) { unlockAudio(); if (!audioCtx) return; }
+    if (!audioCtx) return;
     musicPlaying = true;
     musicBeatIdx = 0;
     // Simple approach: schedule one beat at a time, no while loop
