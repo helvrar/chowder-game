@@ -61,6 +61,34 @@
     border-color: rgba(240,192,64,0.55);
     color: rgba(240,192,64,0.9);
   }
+  #name-popup {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 200;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: monospace; text-align: center;
+  }
+  #name-popup.active { display: flex; }
+  #name-popup h2 { color: #f0c040; font-size: 22px; margin-bottom: 8px; }
+  #name-popup p { color: #aaa; font-size: 13px; margin-bottom: 18px; }
+  #name-popup input {
+    background: #222; border: 2px solid #f0c040; color: #fff;
+    font-family: monospace; font-size: 20px; text-align: center;
+    padding: 8px 12px; width: 200px; max-width: 80vw;
+    text-transform: uppercase; letter-spacing: 3px;
+    outline: none; border-radius: 4px;
+    touch-action: auto; user-select: auto; -webkit-user-select: auto;
+  }
+  #name-popup input::placeholder { color: #555; text-transform: none; letter-spacing: 0; }
+  #name-popup button {
+    margin-top: 14px; padding: 10px 30px;
+    background: #f0c040; color: #111; border: none;
+    font-family: monospace; font-size: 16px; font-weight: bold;
+    cursor: pointer; border-radius: 4px;
+  }
+  #name-popup button:active { background: #d4a830; }
   #rotate-prompt {
     display: none;
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -80,6 +108,12 @@
 </style>
 </head>
 <body>
+<div id="name-popup">
+  <h2>ENTER YOUR NAME</h2>
+  <p>3 letters, arcade style!</p>
+  <input type="text" id="name-input" maxlength="3" placeholder="AAA" autocomplete="off" autocapitalize="characters">
+  <button id="name-ok">START</button>
+</div>
 <div id="rotate-prompt"><div class="icon">📱↪️</div>Rotate your phone sideways<br>to play!</div>
 <canvas id="game" width="800" height="500"></canvas>
 <div id="controls">Arrows: Move | Space: Bark Attack | R: Restart</div>
@@ -523,10 +557,60 @@
   const SCENE_W = 1200, WORLD_END = SCENES.length * SCENE_W;
 
   // ============================================================
+  // PLAYER NAME & LEADERBOARD (localStorage)
+  // ============================================================
+  const LS_NAME_KEY = 'chowder_playerName';
+  const LS_BOARD_KEY = 'chowder_leaderboard';
+  let playerName = localStorage.getItem(LS_NAME_KEY) || '';
+  let leaderboard = [];
+  try { leaderboard = JSON.parse(localStorage.getItem(LS_BOARD_KEY)) || []; } catch(e) { leaderboard = []; }
+  // Ensure leaderboard is always sorted and max 10
+  function saveLeaderboard() {
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 10);
+    try { localStorage.setItem(LS_BOARD_KEY, JSON.stringify(leaderboard)); } catch(e) {}
+  }
+  function addToLeaderboard(name, sc) {
+    leaderboard.push({ name: name.toUpperCase(), score: sc, date: Date.now() });
+    saveLeaderboard();
+  }
+  // Load hiScore from leaderboard
+  let storedHi = leaderboard.length > 0 ? leaderboard[0].score : 0;
+
+  // Name popup logic
+  const namePopup = document.getElementById('name-popup');
+  const nameInput = document.getElementById('name-input');
+  const nameOk = document.getElementById('name-ok');
+  let nameReady = !!playerName;
+
+  if (!playerName) {
+    namePopup.classList.add('active');
+    // Allow typing in the name input (override touch-action: none for this element)
+    nameInput.style.touchAction = 'auto';
+    nameInput.style.userSelect = 'auto';
+    nameInput.style.webkitUserSelect = 'auto';
+    setTimeout(() => nameInput.focus(), 300);
+  }
+
+  function submitName() {
+    let n = nameInput.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 3);
+    if (!n) n = 'AAA';
+    while (n.length < 3) n += 'A';
+    playerName = n;
+    localStorage.setItem(LS_NAME_KEY, playerName);
+    namePopup.classList.remove('active');
+    nameReady = true;
+  }
+  nameOk.addEventListener('click', submitName);
+  nameOk.addEventListener('touchend', e => { e.preventDefault(); submitName(); });
+  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitName(); });
+
+  // ============================================================
   // GAME STATE
   // ============================================================
-  let gameState = 'title', worldX = 0, score = 0, frame = 0;
+  let gameState = 'title', worldX = 0, score = 0, frame = 0, hiScore = storedHi;
   let totalEnemiesSpawned = 0;
+  let showLeaderboard = false; // toggled on game over/win after score is added
 
   const player = {
     y: 380, hp: 3, maxHp: 3,
@@ -603,12 +687,14 @@
   });
 
   function startGame() {
+    if (!nameReady) return;
     gameState = 'playing'; worldX = 0; score = 0; frame = 0;
     totalEnemiesSpawned = 0;
     player.y = 380; player.hp = 3; player.attacking = false;
     player.atkTimer = 0; player.invTimer = 0;
     enemies = []; food = []; particles = [];
     nextEnemy = 300; nextFood = 200;
+    showLeaderboard = false;
     startMusic();
   }
 
@@ -787,11 +873,11 @@
       ctx.beginPath(); ctx.moveTo(rx, 0); ctx.lineTo(rx - 12, 0); ctx.lineTo(rx, 32); ctx.lineTo(rx + 12, 32); ctx.fill();
     }
     ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(90, 0, W - 180, 32);
-    ctx.fillStyle = '#5dade2'; ctx.font = 'bold 14px monospace'; ctx.fillText('1P', 100, 20);
+    ctx.fillStyle = '#5dade2'; ctx.font = 'bold 14px monospace'; ctx.fillText(playerName || '1P', 100, 20);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 16px monospace'; ctx.fillText(String(score).padStart(6, '0'), 130, 20);
     for (let i = 0; i < player.maxHp; i++) drawHeart(260 + i * 24, 6, i < player.hp ? '#e74c3c' : '#333');
     ctx.fillStyle = '#5dade2'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center'; ctx.fillText('HI', W / 2, 12);
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 14px monospace'; ctx.fillText('99999', W / 2, 26); ctx.textAlign = 'left';
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 14px monospace'; ctx.fillText(String(hiScore).padStart(6, '0'), W / 2, 26); ctx.textAlign = 'left';
     const si = Math.floor(worldX / SCENE_W);
     const sn = si < SCENES.length ? SCENES[si].name : '';
     if (sn) { ctx.fillStyle = '#f0c040'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'right'; ctx.fillText(sn, W - 100, 20); ctx.textAlign = 'left'; }
@@ -813,10 +899,14 @@
     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 50, W, 55);
     ctx.fillStyle = '#f0c040'; ctx.font = 'bold 24px monospace'; ctx.textAlign = 'center';
     ctx.fillText("CHOWDER'S SINGAPORE ADVENTURE", W / 2, 85);
+    if (playerName) {
+      ctx.fillStyle = '#5dade2'; ctx.font = 'bold 14px monospace';
+      ctx.fillText('PLAYER: ' + playerName, W / 2, H / 2 + 50);
+    }
     ctx.fillStyle = '#fff'; ctx.font = '12px monospace';
-    ctx.fillText(isMobile ? 'Tap to start!' : 'Press SPACE to start', W / 2, H / 2 + 60);
+    ctx.fillText(isMobile ? 'Tap to start!' : 'Press SPACE to start', W / 2, H / 2 + 70);
     ctx.fillStyle = '#888'; ctx.font = '10px monospace';
-    ctx.fillText(isMobile ? 'Use buttons to move & bark!' : 'Arrows: Move | Space: Bark Attack | Eat scraps for HP!', W / 2, H / 2 + 80);
+    ctx.fillText(isMobile ? 'Use buttons to move & bark!' : 'Arrows: Move | Space: Bark Attack | Eat scraps for HP!', W / 2, H / 2 + 88);
     ctx.textAlign = 'left';
     ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0, 0, W, 32);
     for (let i = 0; i < Math.ceil(W / 12) + 1; i++) {
@@ -834,7 +924,7 @@
   function update() {
     if (gameState !== 'playing') return;
     frame++; worldX += SCROLL_SPEED;
-    if (worldX >= WORLD_END) { gameState = 'win'; stopMusic(); return; }
+    if (worldX >= WORLD_END) { gameState = 'win'; stopMusic(); if (score > hiScore) hiScore = score; addToLeaderboard(playerName, score); showLeaderboard = true; return; }
 
     const spd = 3;
     if (keys['ArrowUp'] || keys['w'] || touchKeys.up) player.y = Math.max(FLOOR_TOP + 10, player.y - spd);
@@ -879,7 +969,7 @@
         player.invTimer = 60;
         particle(PLAYER_X, player.y - 30, '#e74c3c', '-1 HP');
         playWhimper();
-        if (player.hp <= 0) { gameState = 'gameover'; stopMusic(); playKO(); }
+        if (player.hp <= 0) { if (score > hiScore) hiScore = score; addToLeaderboard(playerName, score); showLeaderboard = true; gameState = 'gameover'; stopMusic(); playKO(); }
       }
     }
     enemies = enemies.filter(e => (e.wx - worldX) > -100);
@@ -969,25 +1059,76 @@
     ctx.globalAlpha = 1;
     drawHUD();
 
-    if (gameState === 'gameover') {
-      ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 0, W, H);
-      ctx.textAlign = 'center'; ctx.fillStyle = '#e74c3c'; ctx.font = 'bold 40px monospace';
-      ctx.fillText('GAME OVER', W / 2, H / 2 - 40);
-      px(chowderR1, W / 2 - 30, H / 2 - 20, 4);
-      ctx.fillStyle = '#fff'; ctx.font = '18px monospace'; ctx.fillText(`Score: ${score}`, W / 2, H / 2 + 55);
-      ctx.fillStyle = '#888'; ctx.font = '13px monospace'; ctx.fillText(isMobile ? 'Tap to retry' : 'Press R to retry', W / 2, H / 2 + 80);
-      ctx.textAlign = 'left';
-    }
-    if (gameState === 'win') {
-      ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fillRect(0, 0, W, H);
-      ctx.textAlign = 'center'; ctx.fillStyle = '#f0c040'; ctx.font = 'bold 34px monospace';
-      ctx.fillText('CHOWDER WINS!', W / 2, H / 2 - 50);
-      px(chowderR1, W / 2 - 30, H / 2 - 30, 4);
-      ctx.fillStyle = '#fff'; ctx.font = '16px monospace';
-      ctx.fillText('Chowder conquered Singapore!', W / 2, H / 2 + 50);
-      ctx.fillText(`Final Score: ${score}`, W / 2, H / 2 + 75);
-      ctx.fillStyle = '#888'; ctx.font = '13px monospace';
-      ctx.fillText(isMobile ? 'Tap to play again' : 'Press R to play again', W / 2, H / 2 + 100);
+    if (gameState === 'gameover' || gameState === 'win') {
+      ctx.fillStyle = 'rgba(0,0,0,0.82)'; ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = 'center';
+
+      if (gameState === 'gameover') {
+        ctx.fillStyle = '#e74c3c'; ctx.font = 'bold 30px monospace';
+        ctx.fillText('GAME OVER', W / 2, 42);
+      } else {
+        ctx.fillStyle = '#f0c040'; ctx.font = 'bold 30px monospace';
+        ctx.fillText('CHOWDER WINS!', W / 2, 42);
+      }
+
+      // Your score
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 16px monospace';
+      ctx.fillText(`${playerName}  ${String(score).padStart(6, '0')}`, W / 2, 70);
+
+      // Leaderboard
+      if (showLeaderboard) {
+        const bx = W / 2 - 160, by = 88, bw = 320, bh = 330;
+        // Border
+        ctx.fillStyle = '#1a1a3a'; ctx.fillRect(bx, by, bw, bh);
+        ctx.strokeStyle = '#f0c040'; ctx.lineWidth = 2; ctx.strokeRect(bx, by, bw, bh);
+        // Header
+        ctx.fillStyle = '#f0c040'; ctx.font = 'bold 16px monospace';
+        ctx.fillText('TOP  10  SCORES', W / 2, by + 24);
+        // Column headers
+        ctx.fillStyle = '#5dade2'; ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('RNK', bx + 14, by + 48);
+        ctx.fillText('NAME', bx + 60, by + 48);
+        ctx.fillText('SCORE', bx + 180, by + 48);
+        // Separator line
+        ctx.fillStyle = '#f0c040'; ctx.fillRect(bx + 10, by + 54, bw - 20, 1);
+        // Entries
+        const board = leaderboard.slice(0, 10);
+        for (let i = 0; i < 10; i++) {
+          const ey = by + 70 + i * 25;
+          const entry = board[i];
+          // Highlight if this is the current score
+          const isCurrent = entry && entry.score === score && entry.name === playerName && entry.date && (Date.now() - entry.date < 5000);
+          if (isCurrent) {
+            ctx.fillStyle = 'rgba(240,192,64,0.15)'; ctx.fillRect(bx + 4, ey - 14, bw - 8, 22);
+          }
+          // Rank
+          const rankColors = ['#f0c040', '#c0c0c0', '#cd7f32']; // gold, silver, bronze
+          ctx.fillStyle = i < 3 ? rankColors[i] : '#888';
+          ctx.font = 'bold 14px monospace';
+          ctx.textAlign = 'left';
+          ctx.fillText(`${i + 1}.`, bx + 14, ey);
+          if (entry) {
+            // Name
+            ctx.fillStyle = isCurrent ? '#f0c040' : '#fff';
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText(entry.name, bx + 60, ey);
+            // Score
+            ctx.fillStyle = isCurrent ? '#f0c040' : '#ddd';
+            ctx.fillText(String(entry.score).padStart(6, '0'), bx + 180, ey);
+          } else {
+            ctx.fillStyle = '#444'; ctx.font = '14px monospace';
+            ctx.fillText('---', bx + 60, ey);
+            ctx.fillText('------', bx + 180, ey);
+          }
+        }
+      }
+
+      // Retry prompt
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#888'; ctx.font = '12px monospace';
+      const retryY = showLeaderboard ? H - 18 : H / 2 + 80;
+      ctx.fillText(isMobile ? 'Tap to play again' : 'Press R or SPACE to play again', W / 2, retryY);
       ctx.textAlign = 'left';
     }
   }
