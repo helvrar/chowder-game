@@ -105,6 +105,15 @@
   @media (min-width: 800px) and (hover: hover) {
     #touch-ui.active { display: none; }
   }
+  #music-toggle {
+    position: fixed; top: 8px; right: 8px; z-index: 50;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; pointer-events: auto;
+  }
+  #music-toggle:active { background: rgba(255,255,255,0.2); }
 </style>
 </head>
 <body>
@@ -124,6 +133,7 @@
   </div>
   <div class="touch-btn" id="btn-attack">BARK</div>
 </div>
+<div id="music-toggle">&#127925;</div>
 <script>
 (() => {
   const canvas = document.getElementById('game');
@@ -367,6 +377,7 @@
   }
 
   function startMusic() {
+    if (!musicEnabled) return;
     if (musicPlaying) return;
     if (!audioCtx) return;
     musicPlaying = true;
@@ -385,6 +396,26 @@
     musicPlaying = false;
     if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
   }
+
+  // --- MUSIC TOGGLE ---
+  let musicEnabled = true;
+  try { musicEnabled = localStorage.getItem('chowder_musicEnabled') !== 'false'; } catch(e) {}
+
+  const musicToggleBtn = document.getElementById('music-toggle');
+  function updateMusicIcon() { musicToggleBtn.textContent = musicEnabled ? '\u{1F3B5}' : '\u{1F507}'; }
+  updateMusicIcon();
+
+  function toggleMusic(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    unlockAudio();
+    musicEnabled = !musicEnabled;
+    try { localStorage.setItem('chowder_musicEnabled', musicEnabled); } catch(e2) {}
+    updateMusicIcon();
+    if (musicEnabled) { if (gameState === 'playing') startMusic(); }
+    else { stopMusic(); }
+  }
+  musicToggleBtn.addEventListener('click', toggleMusic);
+  musicToggleBtn.addEventListener('touchend', toggleMusic);
 
   // ============================================================
   // PIXEL DRAWING
@@ -557,24 +588,59 @@
   const SCENE_W = 1200, WORLD_END = SCENES.length * SCENE_W;
 
   // ============================================================
-  // PLAYER NAME & LEADERBOARD (localStorage)
+  // PLAYER NAME & LEADERBOARD (localStorage + Firebase global)
   // ============================================================
+  const FIREBASE_DB_URL = 'https://chowder-game-default-rtdb.asia-southeast1.firebasedatabase.app';
   const LS_NAME_KEY = 'chowder_playerName';
   const LS_BOARD_KEY = 'chowder_leaderboard';
   let playerName = localStorage.getItem(LS_NAME_KEY) || '';
   let leaderboard = [];
   try { leaderboard = JSON.parse(localStorage.getItem(LS_BOARD_KEY)) || []; } catch(e) { leaderboard = []; }
-  // Ensure leaderboard is always sorted and max 10
+
+  // Save locally (cache)
   function saveLeaderboard() {
     leaderboard.sort((a, b) => b.score - a.score);
     leaderboard = leaderboard.slice(0, 10);
     try { localStorage.setItem(LS_BOARD_KEY, JSON.stringify(leaderboard)); } catch(e) {}
   }
+
+  // Fetch global top 10 from Firebase
+  async function fetchGlobalLeaderboard() {
+    try {
+      const url = FIREBASE_DB_URL + '/leaderboard.json?orderBy="score"&limitToLast=10';
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data) return;
+      const entries = Object.values(data);
+      entries.sort((a, b) => b.score - a.score);
+      leaderboard = entries.slice(0, 10);
+      saveLeaderboard();
+      if (leaderboard.length > 0 && leaderboard[0].score > hiScore) {
+        hiScore = leaderboard[0].score;
+      }
+    } catch(e) {} // Offline fallback: use local data
+  }
+
+  // Push a score to Firebase (fire-and-forget)
+  async function pushScoreToGlobal(name, sc) {
+    try {
+      await fetch(FIREBASE_DB_URL + '/leaderboard.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.toUpperCase(), score: sc, date: Date.now() })
+      });
+      await fetchGlobalLeaderboard();
+    } catch(e) {} // Offline: score is still saved locally
+  }
+
   function addToLeaderboard(name, sc) {
     leaderboard.push({ name: name.toUpperCase(), score: sc, date: Date.now() });
     saveLeaderboard();
+    pushScoreToGlobal(name, sc); // async, non-blocking
   }
-  // Load hiScore from leaderboard
+
+  // Load hiScore from local cache
   let storedHi = leaderboard.length > 0 ? leaderboard[0].score : 0;
 
   // Name popup logic
@@ -611,6 +677,9 @@
   let gameState = 'title', worldX = 0, score = 0, frame = 0, hiScore = storedHi;
   let totalEnemiesSpawned = 0;
   let showLeaderboard = false; // toggled on game over/win after score is added
+
+  // Fetch global leaderboard on page load (async, non-blocking)
+  fetchGlobalLeaderboard();
 
   const player = {
     y: 380, hp: 3, maxHp: 3,
