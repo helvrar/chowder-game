@@ -343,7 +343,7 @@
   const melodyL2 = [76,74,71,69, 67,69,71,74, 76,0,74,71, 69,67,69,0, 71,74,76,79, 76,74,71,69, 67,69,71,0, 74,71,69,0];
   const bassL2 =   [45,0,45,48, 43,0,43,0, 45,0,48,0, 43,0,40,0, 45,0,45,48, 43,0,43,0, 45,0,48,0, 43,0,43,0];
   let melodyNotes = melodyL1, bassNotes = bassL1;
-  const BPM = 140, BEAT_LEN = 60 / BPM;
+  const BPM = 280, BEAT_LEN = 60 / BPM;
   let musicBeatIdx = 0, nextBeatTime = 0;
 
   function scheduleMusicBeat(t) {
@@ -675,7 +675,7 @@
   // CONSTANTS
   // ============================================================
   const FLOOR_TOP = 320, FLOOR_BOT = 440;
-  const SCROLL_SPEED = 1.8, PLAYER_X = 140;
+  const SCROLL_SPEED = 3.6, PLAYER_X = 140;
   const SPRITE_S = 3.5, DOG_S = 3, THUG_S = 4;
 
   // ============================================================
@@ -715,7 +715,7 @@
   const LEVEL_NAMES = ["SINGAPORE", "SHANGHAI"];
   let currentLevel = 0;
   let levelScenes = LEVELS[0];
-  const SCENE_W = 1200;
+  const SCENE_W = 600;
   let WORLD_END = levelScenes.length * SCENE_W;
 
   // ============================================================
@@ -820,7 +820,7 @@
   };
 
   let enemies = [], food = [], particles = [];
-  let nextEnemy = 300, nextFood = 200;
+  let nextEnemy = 150, nextFood = 100;
 
   // ============================================================
   // INPUT - Keyboard
@@ -898,7 +898,7 @@
     player.y = 380; player.hp = 3; player.maxHp = 3; player.attacking = false;
     player.atkTimer = 0; player.invTimer = 0;
     enemies = []; food = []; particles = [];
-    nextEnemy = 300; nextFood = 200;
+    nextEnemy = 150; nextFood = 100;
     showLeaderboard = false;
     levelCompleteTimer = 0;
     startMusic();
@@ -914,7 +914,7 @@
     worldX = 0; frame = 0;
     totalEnemiesSpawned = 0;
     enemies = []; food = []; particles = [];
-    nextEnemy = 300; nextFood = 200;
+    nextEnemy = 150; nextFood = 100;
     player.maxHp = 4; player.hp = player.maxHp;
     player.attacking = false; player.atkTimer = 0; player.invTimer = 0;
     levelCompleteTimer = 0;
@@ -969,7 +969,7 @@
       variant: variant,
       hitFlash: 0,
     });
-    nextEnemy = worldX + 100 + Math.random() * 180;
+    nextEnemy = worldX + 50 + Math.random() * 90;
   }
 
   function spawnFood() {
@@ -982,7 +982,7 @@
       type: types[Math.floor(Math.random() * types.length)],
       collected: false,
     });
-    nextFood = worldX + 140 + Math.random() * 180;
+    nextFood = worldX + 70 + Math.random() * 90;
   }
 
   function particle(x, y, col, txt) {
@@ -1612,7 +1612,7 @@
     frame++; worldX += SCROLL_SPEED;
     if (worldX >= WORLD_END) {
       if (currentLevel === 0) {
-        gameState = 'levelComplete'; stopMusic(); levelCompleteTimer = 180; return;
+        gameState = 'levelComplete'; stopMusic(); levelCompleteTimer = 90; return;
       } else {
         gameState = 'win'; stopMusic(); if (score > hiScore) hiScore = score; addToLeaderboard(playerName, score); showLeaderboard = true; return;
       }
