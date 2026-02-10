@@ -30,6 +30,7 @@
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
+    z-index: 1;
   }
   #controls { position: fixed; bottom: 4px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #666; z-index: 5; }
   #touch-ui {
@@ -106,13 +107,14 @@
     #touch-ui.active { display: none; }
   }
   #music-toggle {
-    position: fixed; top: 8px; right: 8px; z-index: 50;
-    width: 38px; height: 38px; border-radius: 50%;
-    background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.3);
+    position: fixed; top: 42px; right: 12px; z-index: 50;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.35);
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; cursor: pointer;
+    font-size: 20px; cursor: pointer; color: #fff;
     -webkit-tap-highlight-color: transparent; pointer-events: auto;
   }
+  #music-toggle:hover { background: rgba(0,0,0,0.9); border-color: #f0c040; }
   #music-toggle:active { background: rgba(255,255,255,0.2); }
 </style>
 </head>
@@ -334,8 +336,13 @@
 
   // --- MUSIC: real-time scheduled chiptune ---
   function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
-  const melodyNotes = [72,72,74,76, 76,74,72,71, 69,69,71,72, 72,71,71,0, 72,72,74,76, 76,74,72,71, 69,69,71,72, 71,69,69,0];
-  const bassNotes =   [48,0,48,0, 45,0,45,0, 43,0,43,0, 45,0,47,0, 48,0,48,0, 45,0,45,0, 43,0,43,0, 45,0,45,0];
+  // Level 1 music - bright major key (Singapore)
+  const melodyL1 = [72,72,74,76, 76,74,72,71, 69,69,71,72, 72,71,71,0, 72,72,74,76, 76,74,72,71, 69,69,71,72, 71,69,69,0];
+  const bassL1 =   [48,0,48,0, 45,0,45,0, 43,0,43,0, 45,0,47,0, 48,0,48,0, 45,0,45,0, 43,0,43,0, 45,0,45,0];
+  // Level 2 music - pentatonic/minor feel (Shanghai)
+  const melodyL2 = [76,74,71,69, 67,69,71,74, 76,0,74,71, 69,67,69,0, 71,74,76,79, 76,74,71,69, 67,69,71,0, 74,71,69,0];
+  const bassL2 =   [45,0,45,48, 43,0,43,0, 45,0,48,0, 43,0,40,0, 45,0,45,48, 43,0,43,0, 45,0,48,0, 43,0,43,0];
+  let melodyNotes = melodyL1, bassNotes = bassL1;
   const BPM = 140, BEAT_LEN = 60 / BPM;
   let musicBeatIdx = 0, nextBeatTime = 0;
 
@@ -564,13 +571,117 @@
   const DOG_VARIANT_KEYS = ['orange', 'black', 'white'];
 
   // ============================================================
+  // CAT SPRITE (Level 2 - stray cats)
+  // ============================================================
+  const catL1 = [
+    [_,_,_,_,_,_,_,_,_,_,_,_,O1,_,_,_,_,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,O1,O4,O1,_,O1,O4,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,_,O1,O3,O3,O3,O1,O3,O3,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,_,O1,O3,OE,O3,O3,OE,O3,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,O1,O3,O3,O3,O3,O1,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,O1,O3,ON,O3,O1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,O1,O4,O4,O4,O4,O4,O1,_,_,_],
+    [_,_,_,_,_,_,_,_,_,O1,O4,O3,O3,O3,O3,O4,O1,_,_,_],
+    [_,_,_,_,_,_,_,_,O1,O4,O3,O3,O3,O3,O3,O3,O4,O1,_,_],
+    [_,_,_,_,_,_,_,_,O1,O4,O3,O3,O3,O3,O3,O3,O4,O1,_,_],
+    [_,_,_,_,_,_,_,_,O1,O4,O4,O4,O4,O4,O4,O4,O4,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,O1,O4,_,_,_,_,O4,O1,_,_,_],
+    [_,O1,O1,_,_,_,_,_,_,O1,O1,_,_,_,_,O1,O1,_,_,_],
+    [_,_,O1,O1,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,O1,O4,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,_,O1,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  ];
+  const catL2 = [
+    [_,_,_,_,_,_,_,_,_,_,_,_,O1,_,_,_,_,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,O1,O4,O1,_,O1,O4,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,_,O1,O3,O3,O3,O1,O3,O3,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,_,O1,O3,OE,O3,O3,OE,O3,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,O1,O3,O3,O3,O3,O1,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,O1,O3,ON,O3,O1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,O1,O4,O4,O4,O4,O4,O1,_,_,_],
+    [_,_,_,_,_,_,_,_,_,O1,O4,O3,O3,O3,O3,O4,O1,_,_,_],
+    [_,_,_,_,_,_,_,_,O1,O4,O3,O3,O3,O3,O3,O3,O4,O1,_,_],
+    [_,_,_,_,_,_,_,_,O1,O4,O3,O3,O3,O3,O3,O3,O4,O1,_,_],
+    [_,_,_,_,_,_,_,_,O1,O4,O4,O4,O4,O4,O4,O4,O4,O1,_,_],
+    [_,_,_,_,_,_,_,_,_,O1,_,O4,_,_,O4,_,O1,_,_,_],
+    [_,_,O1,_,_,_,_,_,_,O1,O1,_,_,_,_,O1,O1,_,_,_],
+    [_,O1,O4,O1,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,O1,O1,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    [_,_,_,O1,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  ];
+  const catFrames = [catL1, catL2];
+  const CAT_COLORS = {
+    orange: {},
+    gray: { [O1]: '#808080', [O2]: '#606060', [O3]: '#c0c0c0', [O4]: '#a0a0a0' },
+    black: { [O1]: '#2a2a2a', [O2]: '#1a1a1a', [O3]: '#555', [O4]: '#3a3a3a' },
+    calico: { [O1]: '#E8860C', [O2]: '#fff', [O3]: '#FFF5E0', [O4]: '#2a2a2a' },
+  };
+  const CAT_VARIANT_KEYS = ['orange', 'gray', 'black', 'calico'];
+  const CAT_S = 3;
+
+  // ============================================================
+  // DELIVERY RIDER SPRITE (Level 2 - e-scooter)
+  // ============================================================
+  const R1='#2060d0',R2='#1848a0',R3='#ddd',R4='#888',R5='#333',RH='#f0d0a0';
+  const riderL1 = [
+    [_,_,_,_,_,_,_,_,_,_,_,_,RH,RH,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,RH,RH,RH,RH,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,R1,R1,R1,R1,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R1,R1,R1,R1,R1,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,R1,RH,RH,R1,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R1,R1,R1,R1,R1,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,R1,R2,R1,R1,R1,R2,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,R1,R2,R1,R1,R1,R2,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R1,R1,R1,R1,R1,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R5,R1,R1,R1,R5,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R5,R5,_,R5,R5,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,R4,R4,R4,R4,R4,R4,R4,_,_,_,_,_],
+    [_,_,_,_,_,_,_,R4,R3,R3,R3,R3,R3,R3,R3,R4,_,_,_,_],
+    [_,_,_,_,_,_,R5,R4,R3,R3,R3,R3,R3,R3,R3,R4,R5,_,_,_],
+    [_,_,_,_,_,R5,_,R4,R4,R4,R4,R4,R4,R4,R4,R4,_,R5,_,_],
+    [_,_,_,_,R5,R4,R5,_,_,_,_,_,_,_,_,_,R5,R4,R5,_],
+    [_,_,_,R5,R4,R4,R4,R5,_,_,_,_,_,_,R5,R4,R4,R4,R5,_],
+    [_,_,_,_,R5,R5,R5,_,_,_,_,_,_,_,_,R5,R5,R5,_,_],
+  ];
+  const riderL2 = [
+    [_,_,_,_,_,_,_,_,_,_,_,_,RH,RH,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,RH,RH,RH,RH,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,R1,R1,R1,R1,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R1,R1,R1,R1,R1,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,R1,RH,RH,R1,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R1,R1,R1,R1,R1,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,R1,R2,R1,R1,R1,R2,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,R1,R2,R1,R1,R1,R2,R1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R1,R1,R1,R1,R1,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R5,R1,R1,R1,R5,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,R5,R5,_,R5,R5,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,R4,R4,R4,R4,R4,R4,R4,_,_,_,_,_],
+    [_,_,_,_,_,_,_,R4,R3,R3,R3,R3,R3,R3,R3,R4,_,_,_,_],
+    [_,_,_,_,_,_,R5,R4,R3,R3,R3,R3,R3,R3,R3,R4,R5,_,_,_],
+    [_,_,_,_,_,R5,_,R4,R4,R4,R4,R4,R4,R4,R4,R4,_,R5,_,_],
+    [_,_,_,_,_,R5,R4,R5,_,_,_,_,_,_,_,R5,R4,R5,_,_],
+    [_,_,_,_,R5,R4,R4,R4,R5,_,_,_,_,R5,R4,R4,R4,R5,_,_],
+    [_,_,_,_,_,R5,R5,R5,_,_,_,_,_,_,R5,R5,R5,_,_,_],
+  ];
+  const riderFrames = [riderL1, riderL2];
+  const RIDER_COLORS = {
+    blue: {},
+    yellow: { [R1]: '#e8c020', [R2]: '#c8a010' },
+  };
+  const RIDER_VARIANT_KEYS = ['blue', 'yellow'];
+  const RIDER_S = 3.5;
+
+  // ============================================================
   // CONSTANTS
   // ============================================================
   const FLOOR_TOP = 320, FLOOR_BOT = 440;
   const SCROLL_SPEED = 1.8, PLAYER_X = 140;
   const SPRITE_S = 3.5, DOG_S = 3, THUG_S = 4;
 
-  const SCENES = [
+  // ============================================================
+  // LEVEL SYSTEM
+  // ============================================================
+  const SCENES_L1 = [
     { name: 'Marina Bay Sands', draw: drawSceneMBS },
     { name: 'Merlion Park', draw: drawSceneMerlion },
     { name: 'HDB Heartland', draw: drawSceneHDB },
@@ -585,7 +696,27 @@
     { name: 'ArtScience Museum', draw: drawSceneArtScience },
     { name: 'East Coast Park', draw: drawSceneEastCoast },
   ];
-  const SCENE_W = 1200, WORLD_END = SCENES.length * SCENE_W;
+  const SCENES_L2 = [
+    { name: 'The Bund', draw: drawSceneBund },
+    { name: 'Pudong Skyline', draw: drawScenePudong },
+    { name: 'French Concession', draw: drawSceneFrenchConcession },
+    { name: 'Yuyuan Garden', draw: drawSceneYuyuan },
+    { name: 'Nanjing East Road', draw: drawSceneNanjingRd },
+    { name: 'People\'s Square', draw: drawScenePeoplesSq },
+    { name: 'Xintiandi', draw: drawSceneXintiandi },
+    { name: 'Jing\'an Temple', draw: drawSceneJingan },
+    { name: 'Huaihai Road', draw: drawSceneHuaihai },
+    { name: 'Xujiahui', draw: drawSceneXujiahui },
+    { name: 'Suzhou Creek', draw: drawSceneSuzhouCreek },
+    { name: 'Shanghai Tower', draw: drawSceneSHTower },
+    { name: 'Gubei & Hongqiao', draw: drawSceneGubei },
+  ];
+  const LEVELS = [SCENES_L1, SCENES_L2];
+  const LEVEL_NAMES = ["SINGAPORE", "SHANGHAI"];
+  let currentLevel = 0;
+  let levelScenes = LEVELS[0];
+  const SCENE_W = 1200;
+  let WORLD_END = levelScenes.length * SCENE_W;
 
   // ============================================================
   // PLAYER NAME & LEADERBOARD (localStorage + Firebase global)
@@ -607,12 +738,13 @@
   // Fetch global top 10 from Firebase
   async function fetchGlobalLeaderboard() {
     try {
-      const url = FIREBASE_DB_URL + '/leaderboard.json?orderBy="score"&limitToLast=10';
+      const url = FIREBASE_DB_URL + '/leaderboard.json?orderBy=%22score%22&limitToLast=10';
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
-      if (!data) return;
+      if (!data || typeof data !== 'object') return;
       const entries = Object.values(data);
+      if (!entries.length) return;
       entries.sort((a, b) => b.score - a.score);
       leaderboard = entries.slice(0, 10);
       saveLeaderboard();
@@ -706,7 +838,7 @@
         playBark();
       }
     }
-    if ((e.key === 'r' || e.key === 'R') && gameState !== 'playing') startGame();
+    if ((e.key === 'r' || e.key === 'R') && gameState !== 'playing' && gameState !== 'levelComplete') startGame();
   });
   document.addEventListener('keyup', e => { keys[e.key] = false; });
 
@@ -732,8 +864,8 @@
       btnAttack.classList.add('pressed');
       unlockAudio();
       if (gameState === 'title') { startGame(); return; }
-      if (gameState !== 'playing') { startGame(); return; }
-      if (!player.attacking) {
+      if (gameState !== 'playing' && gameState !== 'levelComplete') { startGame(); return; }
+      if (gameState === 'playing' && !player.attacking) {
         player.attacking = true;
         player.atkTimer = 20;
         playBark();
@@ -747,7 +879,7 @@
     e.preventDefault();
     unlockAudio();
     if (gameState === 'title') { startGame(); return; }
-    if (gameState !== 'playing') { startGame(); return; }
+    if (gameState !== 'playing' && gameState !== 'levelComplete') { startGame(); return; }
     if (!player.attacking) {
       player.attacking = true;
       player.atkTimer = 20;
@@ -759,11 +891,35 @@
     if (!nameReady) return;
     gameState = 'playing'; worldX = 0; score = 0; frame = 0;
     totalEnemiesSpawned = 0;
-    player.y = 380; player.hp = 3; player.attacking = false;
+    currentLevel = 0;
+    levelScenes = LEVELS[0];
+    WORLD_END = levelScenes.length * SCENE_W;
+    melodyNotes = melodyL1; bassNotes = bassL1;
+    player.y = 380; player.hp = 3; player.maxHp = 3; player.attacking = false;
     player.atkTimer = 0; player.invTimer = 0;
     enemies = []; food = []; particles = [];
     nextEnemy = 300; nextFood = 200;
     showLeaderboard = false;
+    levelCompleteTimer = 0;
+    startMusic();
+  }
+
+  let levelCompleteTimer = 0;
+
+  function startNextLevel() {
+    currentLevel = 1;
+    levelScenes = LEVELS[1];
+    WORLD_END = levelScenes.length * SCENE_W;
+    melodyNotes = melodyL2; bassNotes = bassL2;
+    worldX = 0; frame = 0;
+    totalEnemiesSpawned = 0;
+    enemies = []; food = []; particles = [];
+    nextEnemy = 300; nextFood = 200;
+    player.maxHp = 4; player.hp = player.maxHp;
+    player.attacking = false; player.atkTimer = 0; player.invTimer = 0;
+    levelCompleteTimer = 0;
+    gameState = 'playing';
+    stopMusic();
     startMusic();
   }
 
@@ -772,23 +928,44 @@
   // ============================================================
   function spawnEnemy() {
     totalEnemiesSpawned++;
-    const isThug = totalEnemiesSpawned % 10 === 0;
-    const variant = DOG_VARIANT_KEYS[Math.floor(Math.random() * DOG_VARIANT_KEYS.length)];
-    // Randomized speeds: some fast, some slow
-    let spd;
-    if (isThug) {
-      spd = 0.2 + Math.random() * 0.5; // thugs: 0.2 to 0.7
+    const isL2 = currentLevel === 1;
+    const isRider = isL2 && totalEnemiesSpawned % 15 === 0;
+    const isCat = isL2 && !isRider && Math.random() < 0.4;
+    const isThug = !isRider && !isCat && totalEnemiesSpawned % 10 === 0;
+
+    let spd, hp, enemyType, variant;
+
+    if (isRider) {
+      enemyType = 'rider';
+      variant = RIDER_VARIANT_KEYS[Math.floor(Math.random() * RIDER_VARIANT_KEYS.length)];
+      spd = 2.5 + Math.random() * 1.5; // very fast: 2.5-4.0
+      hp = 3;
+    } else if (isCat) {
+      enemyType = 'cat';
+      variant = CAT_VARIANT_KEYS[Math.floor(Math.random() * CAT_VARIANT_KEYS.length)];
+      spd = 0.5 + Math.random() * 2.0; // random: 0.5-2.5
+      hp = 1;
+    } else if (isThug) {
+      enemyType = 'dog';
+      variant = DOG_VARIANT_KEYS[Math.floor(Math.random() * DOG_VARIANT_KEYS.length)];
+      spd = 0.2 + Math.random() * 0.5;
+      hp = 2;
     } else {
-      spd = 0.3 + Math.random() * 1.2; // regular: 0.3 to 1.5 (wide range)
+      enemyType = 'dog';
+      variant = DOG_VARIANT_KEYS[Math.floor(Math.random() * DOG_VARIANT_KEYS.length)];
+      spd = 0.3 + Math.random() * 1.2;
+      hp = 1;
     }
+
     enemies.push({
       wx: worldX + W + 60,
       y: FLOOR_TOP + 20 + Math.random() * (FLOOR_BOT - FLOOR_TOP - 40),
       alive: true, af: 0, at: 0,
       spd: spd,
-      hp: isThug ? 2 : 1,
-      maxHp: isThug ? 2 : 1,
-      isThug: isThug,
+      hp: hp,
+      maxHp: hp,
+      isThug: isThug || isRider,
+      enemyType: enemyType,
       variant: variant,
       hitFlash: 0,
     });
@@ -796,7 +973,9 @@
   }
 
   function spawnFood() {
-    const types = ['fishbone','wrapper','banana','can'];
+    const typesL1 = ['fishbone','wrapper','banana','can'];
+    const typesL2 = ['fishbone','wrapper','xlb','firecracker','cabbage','xlb'];
+    const types = currentLevel === 0 ? typesL1 : typesL2;
     food.push({
       wx: worldX + W + 60,
       y: FLOOR_TOP + 20 + Math.random() * (FLOOR_BOT - FLOOR_TOP - 20),
@@ -897,6 +1076,399 @@
   function drawSceneEastCoast(si) { const off = sceneOffset(si), ex = -off * 0.3; ctx.fillStyle = '#2980b9'; ctx.fillRect(0, FLOOR_TOP - 50, W, 50); ctx.fillStyle = '#3498db'; for (let i = 0; i < W; i += 30) ctx.fillRect(i, FLOOR_TOP - 50 + Math.sin(frame * 0.05 + i * 0.05) * 3, 20, 3); ctx.fillStyle = '#f0dca0'; ctx.fillRect(0, FLOOR_TOP - 5, W, 8); for (let i = 0; i < 3; i++) { const bx = ex + 100 + i * 250; if (bx < -30 || bx > W + 30) continue; ctx.fillStyle = '#888'; ctx.fillRect(bx, FLOOR_TOP - 20, 30, 5); ctx.fillRect(bx + 5, FLOOR_TOP - 15, 3, 15); ctx.fillRect(bx + 22, FLOOR_TOP - 15, 3, 15); ctx.fillStyle = 'rgba(150,150,150,0.3)'; for (let s = 0; s < 3; s++) { ctx.beginPath(); ctx.arc(bx + 15 + Math.sin(frame * 0.08 + s) * 5, FLOOR_TOP - 25 - s * 8, 4, 0, Math.PI * 2); ctx.fill(); } } palm(ex + 50, FLOOR_TOP); palm(ex + 400, FLOOR_TOP); palm(ex + 600, FLOOR_TOP); ctx.fillStyle = '#c85050'; ctx.fillRect(0, FLOOR_TOP - 2, W, 3); hdb(ex + 700, FLOOR_TOP - 150, 55, 150, '#a8a0b0'); }
 
   // ============================================================
+  // SHANGHAI SCENE HELPERS
+  // ============================================================
+  function artDeco(x, y, w, h) {
+    if (x + w < -10 || x > W + 10) return;
+    ctx.fillStyle = '#d4c8a8'; ctx.fillRect(x, y, w, h);
+    // Art deco top ornament
+    ctx.fillStyle = '#c0b090'; ctx.fillRect(x - 3, y - 6, w + 6, 8);
+    ctx.fillStyle = '#b0a080'; ctx.fillRect(x + w/2 - 4, y - 14, 8, 10);
+    // Windows with arched tops
+    const cols = Math.floor((w - 8) / 14);
+    for (let c = 0; c < cols; c++) {
+      const wx = x + 6 + c * 14;
+      ctx.fillStyle = '#3a4a5a'; ctx.fillRect(wx, y + 12, 8, 16);
+      ctx.beginPath(); ctx.arc(wx + 4, y + 12, 4, Math.PI, 0); ctx.fill();
+    }
+    // Horizontal bands
+    ctx.fillStyle = '#c0b090';
+    ctx.fillRect(x, y + Math.floor(h * 0.4), w, 3);
+    ctx.fillRect(x, y + Math.floor(h * 0.7), w, 3);
+  }
+
+  function shikumen(x, y, w) {
+    if (x + w < -10 || x > W + 10) return;
+    const h = 75;
+    ctx.fillStyle = '#8c7a6a'; ctx.fillRect(x, y - h, w, h);
+    // Stone door frame
+    ctx.fillStyle = '#a09080'; ctx.fillRect(x + w/2 - 10, y - h + 20, 20, h - 20);
+    ctx.fillStyle = '#5c4a3a'; ctx.fillRect(x + w/2 - 7, y - h + 25, 14, h - 25);
+    // Circular top
+    ctx.fillStyle = '#a09080'; ctx.beginPath(); ctx.arc(x + w/2, y - h + 22, 12, Math.PI, 0); ctx.fill();
+    // Windows
+    ctx.fillStyle = '#4a3a2a';
+    ctx.fillRect(x + 4, y - h + 15, 8, 10);
+    ctx.fillRect(x + w - 12, y - h + 15, 8, 10);
+  }
+
+  function neonSign(x, y, text, color) {
+    if (x < -80 || x > W + 80) return;
+    const flicker = Math.sin(frame * 0.15 + x * 0.3) > -0.3;
+    if (!flicker) return;
+    ctx.fillStyle = color;
+    ctx.font = 'bold 12px monospace';
+    ctx.fillText(text, x, y);
+    // Glow
+    ctx.save(); ctx.globalAlpha = 0.3;
+    ctx.fillStyle = color;
+    ctx.fillRect(x - 2, y - 12, text.length * 8, 16);
+    ctx.restore();
+  }
+
+  function pagoda(x, y, tiers) {
+    if (x < -60 || x > W + 60) return;
+    for (let t = 0; t < tiers; t++) {
+      const tw = 50 - t * 8, th = 18;
+      const tx = x - tw / 2, ty = y - t * (th + 4);
+      ctx.fillStyle = t % 2 ? '#c83030' : '#d44040';
+      ctx.fillRect(tx, ty - th, tw, th);
+      // Eaves
+      ctx.fillStyle = '#8b4513';
+      ctx.beginPath();
+      ctx.moveTo(tx - 8, ty); ctx.lineTo(tx + tw + 8, ty);
+      ctx.lineTo(tx + tw + 3, ty - 4); ctx.lineTo(tx - 3, ty - 4);
+      ctx.fill();
+      // Curved eave tips
+      ctx.beginPath(); ctx.arc(tx - 6, ty - 2, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(tx + tw + 6, ty - 2, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    // Spire
+    ctx.fillStyle = '#f0c040';
+    ctx.fillRect(x - 1, y - tiers * 22 - 15, 2, 15);
+    ctx.beginPath(); ctx.arc(x, y - tiers * 22 - 15, 3, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function overpass(x, w, gy) {
+    if (x + w < -10 || x > W + 10) return;
+    ctx.fillStyle = '#808080'; ctx.fillRect(x, gy - 60, w, 8);
+    ctx.fillStyle = '#666'; ctx.fillRect(x, gy - 52, 6, 52);
+    ctx.fillRect(x + w - 6, gy - 52, 6, 52);
+    // Railing
+    ctx.fillStyle = '#999';
+    for (let i = 0; i < w; i += 12) ctx.fillRect(x + i, gy - 66, 2, 8);
+    ctx.fillRect(x, gy - 66, w, 2);
+  }
+
+  // ============================================================
+  // SHANGHAI SCENES
+  // ============================================================
+  function drawSceneBund(si) {
+    const off = sceneOffset(si), bx = 40 - off * 0.5;
+    // Row of art deco buildings along the Bund
+    const heights = [140, 160, 120, 180, 130, 150, 170, 140];
+    const widths = [65, 55, 70, 50, 60, 55, 65, 60];
+    for (let i = 0; i < 8; i++) {
+      artDeco(bx + i * 80, FLOOR_TOP - heights[i], widths[i], heights[i]);
+    }
+    // Huangpu river hint
+    ctx.fillStyle = 'rgba(41,100,160,0.25)'; ctx.fillRect(0, FLOOR_TOP - 5, W, 5);
+    neonSign(bx + 100, FLOOR_TOP - 190, 'THE BUND', '#ff6040');
+  }
+
+  function drawScenePudong(si) {
+    const off = sceneOffset(si), px2 = 200 - off * 0.4;
+    // Oriental Pearl Tower
+    const opx = px2 + 100;
+    ctx.fillStyle = '#c060a0'; ctx.fillRect(opx - 3, FLOOR_TOP - 280, 6, 280);
+    ctx.fillStyle = '#e070b0'; ctx.beginPath(); ctx.arc(opx, FLOOR_TOP - 200, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#d060a0'; ctx.beginPath(); ctx.arc(opx, FLOOR_TOP - 130, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#e070b0'; ctx.beginPath(); ctx.arc(opx, FLOOR_TOP - 250, 8, 0, Math.PI * 2); ctx.fill();
+    // Shanghai Tower (tallest)
+    const stx = px2 + 250;
+    ctx.fillStyle = '#6080a0'; ctx.fillRect(stx - 12, FLOOR_TOP - 310, 24, 310);
+    ctx.fillStyle = '#7090b0';
+    for (let r = 0; r < 20; r++) ctx.fillRect(stx - 10, FLOOR_TOP - 300 + r * 15, 20, 8);
+    ctx.fillStyle = '#90a8c0'; ctx.fillRect(stx - 2, FLOOR_TOP - 320, 4, 15);
+    // Bottle Opener (SWFC)
+    const box = px2 + 370;
+    ctx.fillStyle = '#5a6a7a'; ctx.fillRect(box - 15, FLOOR_TOP - 260, 30, 260);
+    // Trapezoid opening at top
+    ctx.fillStyle = '#0a0a2e';
+    ctx.beginPath(); ctx.moveTo(box - 8, FLOOR_TOP - 250); ctx.lineTo(box + 8, FLOOR_TOP - 250);
+    ctx.lineTo(box + 5, FLOOR_TOP - 225); ctx.lineTo(box - 5, FLOOR_TOP - 225); ctx.fill();
+    ctx.fillStyle = '#7088a0';
+    for (let r = 0; r < 15; r++) ctx.fillRect(box - 13, FLOOR_TOP - 210 + r * 14, 26, 6);
+    // Jin Mao Tower
+    bldg(px2 + 450, FLOOR_TOP - 230, 35, 230, '#708090', '#ffd86e', '#4a5a6a');
+    // Other skyscrapers
+    bldg(px2, FLOOR_TOP - 180, 45, 180, '#607080', '#aad4ff', '#3a5a6a');
+    bldg(px2 + 520, FLOOR_TOP - 160, 40, 160, '#506070', '#ffd86e', '#3a4a5a');
+  }
+
+  function drawSceneFrenchConcession(si) {
+    const off = sceneOffset(si), fx = 60 - off * 0.5;
+    // Plane trees lining the street
+    for (let i = 0; i < 8; i++) {
+      const tx = fx + i * 95;
+      if (tx < -50 || tx > W + 50) continue;
+      ctx.fillStyle = '#5c4a3a'; ctx.fillRect(tx + 10, FLOOR_TOP - 70, 6, 70);
+      ctx.fillStyle = '#4a8c4a'; ctx.beginPath(); ctx.arc(tx + 13, FLOOR_TOP - 85, 28, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#3d7c3d'; ctx.beginPath(); ctx.arc(tx + 5, FLOOR_TOP - 75, 20, 0, Math.PI * 2); ctx.fill();
+    }
+    // Old lane houses
+    const colors = ['#e8dcc8','#d8c8a8','#c8b898','#d0c0a0','#e0d0b8'];
+    for (let i = 0; i < 6; i++) {
+      shikumen(fx + 30 + i * 120, FLOOR_TOP, 70);
+    }
+    neonSign(fx + 200, FLOOR_TOP - 100, 'FRENCH CONCESSION', '#50c878');
+  }
+
+  function drawSceneYuyuan(si) {
+    const off = sceneOffset(si), yx = 100 - off * 0.5;
+    // Garden wall
+    ctx.fillStyle = '#f0e8d0'; ctx.fillRect(yx - 20, FLOOR_TOP - 50, 800, 50);
+    ctx.fillStyle = '#888'; ctx.fillRect(yx - 20, FLOOR_TOP - 56, 800, 8);
+    // Zigzag bridge
+    ctx.fillStyle = '#c0b090';
+    for (let i = 0; i < 6; i++) {
+      const bx = yx + 60 + i * 50;
+      ctx.fillRect(bx, FLOOR_TOP - 15, 40, 6);
+      ctx.fillStyle = '#a09070'; ctx.fillRect(bx + 15, FLOOR_TOP - 15, 3, 15); ctx.fillStyle = '#c0b090';
+    }
+    // Pond
+    ctx.fillStyle = 'rgba(80,150,100,0.3)'; ctx.fillRect(yx + 50, FLOOR_TOP - 8, 320, 8);
+    // Pagoda
+    pagoda(yx + 500, FLOOR_TOP, 4);
+    // Rocks
+    ctx.fillStyle = '#888';
+    ctx.beginPath(); ctx.arc(yx + 420, FLOOR_TOP - 15, 20, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#777';
+    ctx.beginPath(); ctx.arc(yx + 440, FLOOR_TOP - 10, 15, Math.PI, 0); ctx.fill();
+    // Lanterns
+    for (let i = 0; i < 8; i++) lantern(yx + 50 + i * 70, FLOOR_TOP - 60);
+    neonSign(yx + 200, FLOOR_TOP - 75, 'YUYUAN GARDEN', '#e83030');
+  }
+
+  function drawSceneNanjingRd(si) {
+    const off = sceneOffset(si), nx = 40 - off * 0.5;
+    // Buildings on both sides with lots of neon
+    const colors = ['#d8c8b0','#c0b0a0','#b8a890','#c8b8a0','#d0c0a8','#c0a890'];
+    for (let i = 0; i < 7; i++) {
+      const sx = nx + i * 100;
+      if (sx > W + 80 || sx + 70 < -80) continue;
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(sx, FLOOR_TOP - 100, 70, 100);
+      // Shop fronts
+      ctx.fillStyle = '#5c3a1e'; ctx.fillRect(sx + 15, FLOOR_TOP - 45, 40, 45);
+      ctx.fillStyle = '#ffd86e'; ctx.fillRect(sx + 17, FLOOR_TOP - 43, 36, 30);
+    }
+    // Pedestrian street markings
+    ctx.fillStyle = '#d0c0a0'; ctx.fillRect(nx, FLOOR_TOP - 3, 700, 3);
+    // Neon signs everywhere
+    const neonColors = ['#ff4040','#40ff40','#4080ff','#ff40ff','#ffff40','#40ffff'];
+    for (let i = 0; i < 10; i++) {
+      neonSign(nx + 20 + i * 70, FLOOR_TOP - 110 - (i % 3) * 15, '商', neonColors[i % neonColors.length]);
+    }
+    neonSign(nx + 150, FLOOR_TOP - 130, 'NANJING RD', '#ff6040');
+  }
+
+  function drawScenePeoplesSq(si) {
+    const off = sceneOffset(si), px2 = 80 - off * 0.5;
+    // Open square with museum building
+    ctx.fillStyle = '#c0b8a8'; ctx.fillRect(px2 + 150, FLOOR_TOP - 80, 300, 80);
+    // Museum roof tiers
+    ctx.fillStyle = '#a09888';
+    ctx.fillRect(px2 + 180, FLOOR_TOP - 100, 240, 22);
+    ctx.fillRect(px2 + 210, FLOOR_TOP - 115, 180, 18);
+    ctx.fillRect(px2 + 250, FLOOR_TOP - 125, 100, 14);
+    // Columns
+    for (let i = 0; i < 8; i++) {
+      ctx.fillStyle = '#b0a898'; ctx.fillRect(px2 + 165 + i * 35, FLOOR_TOP - 78, 6, 78);
+    }
+    // Square floor pattern
+    ctx.fillStyle = '#999'; for (let i = 0; i < 12; i++) ctx.fillRect(px2 + 50 + i * 45, FLOOR_TOP - 2, 30, 2);
+    // Trees in square
+    for (let i = 0; i < 4; i++) {
+      const tx = px2 + 40 + i * 140;
+      ctx.fillStyle = '#5c3a1e'; ctx.fillRect(tx, FLOOR_TOP - 40, 4, 40);
+      ctx.fillStyle = '#3d8c3d'; ctx.beginPath(); ctx.arc(tx + 2, FLOOR_TOP - 48, 16, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function drawSceneXintiandi(si) {
+    const off = sceneOffset(si), xx = 50 - off * 0.5;
+    // Shikumen style buildings mixed with modern
+    for (let i = 0; i < 5; i++) shikumen(xx + i * 140, FLOOR_TOP, 80);
+    // Modern glass additions between
+    for (let i = 0; i < 4; i++) {
+      const gx = xx + 90 + i * 140;
+      ctx.fillStyle = 'rgba(150,200,255,0.3)'; ctx.fillRect(gx, FLOOR_TOP - 65, 40, 65);
+      ctx.fillStyle = 'rgba(130,180,235,0.4)';
+      for (let r = 0; r < 4; r++) ctx.fillRect(gx + 2, FLOOR_TOP - 60 + r * 15, 36, 10);
+    }
+    // Cafe tables outside
+    for (let i = 0; i < 6; i++) {
+      const tx = xx + 30 + i * 100;
+      if (tx < -20 || tx > W + 20) continue;
+      ctx.fillStyle = '#8b6914'; ctx.fillRect(tx, FLOOR_TOP - 8, 2, 8);
+      ctx.fillStyle = '#c0a050'; ctx.fillRect(tx - 6, FLOOR_TOP - 10, 14, 3);
+    }
+    neonSign(xx + 250, FLOOR_TOP - 90, 'XINTIANDI', '#f0c040');
+  }
+
+  function drawSceneJingan(si) {
+    const off = sceneOffset(si), jx = 200 - off * 0.5;
+    // Temple building
+    ctx.fillStyle = '#c8a840'; ctx.fillRect(jx - 30, FLOOR_TOP - 100, 250, 100);
+    // Multi-tiered roof
+    for (let t = 0; t < 3; t++) {
+      const rw = 270 - t * 40, rx = jx - 40 + t * 20;
+      ctx.fillStyle = '#8b6914';
+      ctx.beginPath(); ctx.moveTo(rx, FLOOR_TOP - 100 - t * 30);
+      ctx.lineTo(rx + rw, FLOOR_TOP - 100 - t * 30);
+      ctx.lineTo(rx + rw - 15, FLOOR_TOP - 115 - t * 30);
+      ctx.lineTo(rx + 15, FLOOR_TOP - 115 - t * 30); ctx.fill();
+      // Curved eave tips
+      ctx.beginPath(); ctx.arc(rx + 5, FLOOR_TOP - 100 - t * 30, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(rx + rw - 5, FLOOR_TOP - 100 - t * 30, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    // Pillars
+    for (let i = 0; i < 6; i++) { ctx.fillStyle = '#c03030'; ctx.fillRect(jx - 15 + i * 42, FLOOR_TOP - 98, 8, 98); }
+    // Modern skyscrapers behind
+    bldg(jx - 150, FLOOR_TOP - 200, 40, 200, '#506070', '#ffd86e', '#3a4a5a');
+    bldg(jx + 280, FLOOR_TOP - 250, 50, 250, '#607080', '#aad4ff', '#4a5a6a');
+  }
+
+  function drawSceneHuaihai(si) {
+    const off = sceneOffset(si), hx = 50 - off * 0.5;
+    // IAPM Mall
+    ctx.fillStyle = '#e0d0d0'; ctx.fillRect(hx + 100, FLOOR_TOP - 140, 200, 140);
+    ctx.fillStyle = 'rgba(150,200,255,0.5)';
+    for (let r = 0; r < 8; r++) ctx.fillRect(hx + 105, FLOOR_TOP - 135 + r * 17, 190, 12);
+    ctx.fillStyle = '#333'; ctx.fillRect(hx + 150, FLOOR_TOP - 150, 100, 14);
+    ctx.fillStyle = '#f0c040'; ctx.font = 'bold 10px monospace'; ctx.fillText('iapm', hx + 175, FLOOR_TOP - 139);
+    // Other shops
+    const shopColors = ['#c0a0d0','#a0d0c0','#d0a0a0','#a0c0d0'];
+    for (let i = 0; i < 4; i++) {
+      const sx = hx + 350 + i * 85;
+      if (sx > W + 80 || sx < -80) continue;
+      ctx.fillStyle = shopColors[i]; ctx.fillRect(sx, FLOOR_TOP - 80, 65, 80);
+      ctx.fillStyle = '#333'; ctx.fillRect(sx + 10, FLOOR_TOP - 40, 45, 40);
+      ctx.fillStyle = '#ffd86e'; ctx.fillRect(sx + 12, FLOOR_TOP - 38, 41, 28);
+    }
+    // Plane trees
+    for (let i = 0; i < 5; i++) {
+      const tx = hx + i * 150;
+      if (tx < -30 || tx > W + 30) continue;
+      ctx.fillStyle = '#5c3a1e'; ctx.fillRect(tx, FLOOR_TOP - 55, 5, 55);
+      ctx.fillStyle = '#4a8c4a'; ctx.beginPath(); ctx.arc(tx + 3, FLOOR_TOP - 65, 22, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function drawSceneXujiahui(si) {
+    const off = sceneOffset(si), xx = 80 - off * 0.5;
+    // Xujiahui Cathedral
+    const cx2 = xx + 200;
+    ctx.fillStyle = '#c0a080'; ctx.fillRect(cx2 - 50, FLOOR_TOP - 120, 100, 120);
+    // Two towers
+    ctx.fillStyle = '#b09070'; ctx.fillRect(cx2 - 55, FLOOR_TOP - 160, 25, 50);
+    ctx.fillRect(cx2 + 30, FLOOR_TOP - 160, 25, 50);
+    // Pointed spires
+    ctx.fillStyle = '#888';
+    ctx.beginPath(); ctx.moveTo(cx2 - 55, FLOOR_TOP - 160); ctx.lineTo(cx2 - 42, FLOOR_TOP - 195);
+    ctx.lineTo(cx2 - 30, FLOOR_TOP - 160); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx2 + 30, FLOOR_TOP - 160); ctx.lineTo(cx2 + 43, FLOOR_TOP - 195);
+    ctx.lineTo(cx2 + 55, FLOOR_TOP - 160); ctx.fill();
+    // Rose window
+    ctx.fillStyle = '#4a6a9a'; ctx.beginPath(); ctx.arc(cx2, FLOOR_TOP - 90, 15, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#5a7aaa'; ctx.beginPath(); ctx.arc(cx2, FLOOR_TOP - 90, 10, 0, Math.PI * 2); ctx.fill();
+    // Door
+    ctx.fillStyle = '#5c3a1e'; ctx.fillRect(cx2 - 12, FLOOR_TOP - 50, 24, 50);
+    ctx.beginPath(); ctx.arc(cx2, FLOOR_TOP - 50, 12, Math.PI, 0); ctx.fill();
+    // SJTU campus hint
+    bldg(xx, FLOOR_TOP - 100, 60, 100, '#a0b0a0', '#ffd86e', '#4a5a4a');
+    // Modern buildings
+    bldg(xx + 400, FLOOR_TOP - 200, 50, 200, '#607080', '#aad4ff', '#3a5a6a');
+    bldg(xx + 480, FLOOR_TOP - 170, 40, 170, '#506070', '#ffd86e', '#3a4a5a');
+  }
+
+  function drawSceneSuzhouCreek(si) {
+    const off = sceneOffset(si), sx2 = 50 - off * 0.5;
+    // Water
+    ctx.fillStyle = '#2980b9'; ctx.fillRect(0, FLOOR_TOP - 40, W, 40);
+    ctx.fillStyle = '#3498db';
+    for (let i = 0; i < W; i += 25) ctx.fillRect(i, FLOOR_TOP - 40 + Math.sin(frame * 0.06 + i * 0.04) * 3, 16, 2);
+    // Post Office building
+    const pox = sx2 + 200;
+    ctx.fillStyle = '#c8b898'; ctx.fillRect(pox, FLOOR_TOP - 130, 180, 130);
+    ctx.fillStyle = '#b0a080';
+    ctx.fillRect(pox - 5, FLOOR_TOP - 136, 190, 8);
+    // Clock tower
+    ctx.fillStyle = '#b8a888'; ctx.fillRect(pox + 70, FLOOR_TOP - 170, 40, 40);
+    ctx.fillStyle = '#f0e8d0'; ctx.beginPath(); ctx.arc(pox + 90, FLOOR_TOP - 155, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#333'; ctx.fillRect(pox + 89, FLOOR_TOP - 163, 2, 10);
+    ctx.fillRect(pox + 88, FLOOR_TOP - 155, 6, 2);
+    // Columns
+    for (let i = 0; i < 5; i++) ctx.fillRect(pox + 15 + i * 35, FLOOR_TOP - 128, 6, 128);
+    // Bridge
+    ctx.fillStyle = '#888'; ctx.fillRect(sx2 + 50, FLOOR_TOP - 50, 120, 10);
+    ctx.fillStyle = '#777'; ctx.fillRect(sx2 + 55, FLOOR_TOP - 50, 4, 50); ctx.fillRect(sx2 + 162, FLOOR_TOP - 50, 4, 50);
+    // Warehouses
+    artDeco(sx2 + 450, FLOOR_TOP - 90, 80, 90);
+    artDeco(sx2 + 550, FLOOR_TOP - 70, 60, 70);
+  }
+
+  function drawSceneSHTower(si) {
+    const off = sceneOffset(si), tx = 300 - off * 0.4;
+    // Shanghai Tower (twisted)
+    ctx.fillStyle = '#7090b0';
+    ctx.beginPath(); ctx.moveTo(tx - 18, FLOOR_TOP); ctx.lineTo(tx - 14, FLOOR_TOP - 310);
+    ctx.lineTo(tx + 14, FLOOR_TOP - 310); ctx.lineTo(tx + 18, FLOOR_TOP); ctx.fill();
+    // Twist pattern
+    for (let i = 0; i < 20; i++) {
+      const yy = FLOOR_TOP - i * 15;
+      const tw = Math.sin(i * 0.3) * 3;
+      ctx.fillStyle = i % 2 ? '#80a0c0' : '#6888a8';
+      ctx.fillRect(tx - 12 + tw, yy - 12, 24, 8);
+    }
+    ctx.fillStyle = '#90a8c0'; ctx.fillRect(tx - 2, FLOOR_TOP - 325, 4, 18);
+    // SWFC (bottle opener)
+    const bx = tx + 120;
+    ctx.fillStyle = '#5a6a7a'; ctx.fillRect(bx - 15, FLOOR_TOP - 260, 30, 260);
+    ctx.fillStyle = '#0a0a2e';
+    ctx.beginPath(); ctx.moveTo(bx - 8, FLOOR_TOP - 250); ctx.lineTo(bx + 8, FLOOR_TOP - 250);
+    ctx.lineTo(bx + 5, FLOOR_TOP - 230); ctx.lineTo(bx - 5, FLOOR_TOP - 230); ctx.fill();
+    // Jin Mao
+    bldg(tx - 120, FLOOR_TOP - 230, 35, 230, '#708090', '#ffd86e', '#4a5a6a');
+    // Other
+    bldg(tx + 200, FLOOR_TOP - 180, 45, 180, '#607080', '#aad4ff', '#3a5a6a');
+    bldg(tx - 200, FLOOR_TOP - 150, 40, 150, '#506070', '#ffd86e', '#3a4a5a');
+  }
+
+  function drawSceneGubei(si) {
+    const off = sceneOffset(si), gx = 50 - off * 0.5;
+    // Modern residential towers
+    const towerColors = ['#a8b8c8','#b8c0a8','#c0a8b0','#a0b0b8','#b0a8b8','#a8c0b8'];
+    const heights = [200,170,220,180,210,190];
+    for (let i = 0; i < 6; i++) {
+      const bx = gx + i * 110;
+      if (bx > W + 60 || bx + 50 < -60) continue;
+      hdb(bx, FLOOR_TOP - heights[i], 60, heights[i], towerColors[i]);
+    }
+    // Overpass
+    overpass(gx + 100, 400, FLOOR_TOP);
+    // Trees between buildings
+    for (let i = 0; i < 8; i++) {
+      const tx = gx + 20 + i * 85;
+      if (tx < -20 || tx > W + 20) continue;
+      ctx.fillStyle = '#5c3a1e'; ctx.fillRect(tx, FLOOR_TOP - 35, 4, 35);
+      ctx.fillStyle = '#3d8c3d'; ctx.beginPath(); ctx.arc(tx + 2, FLOOR_TOP - 42, 14, 0, Math.PI * 2); ctx.fill();
+    }
+    neonSign(gx + 250, FLOOR_TOP - 230, 'GUBEI', '#40ffff');
+  }
+
+  // ============================================================
   // FLOOR & SKY
   // ============================================================
   function drawFloor() {
@@ -915,6 +1487,17 @@
     ctx.fillStyle = '#fff';
     for (let i = 0; i < 25; i++) { const sx = (42 * (i+1) * 7) % W, sy = (42 * (i+1) * 13) % 80; if (Math.sin(frame * 0.04 + i) > 0.2) ctx.fillRect(sx, sy, 2, 2); }
   }
+  function drawSkyShanghai() {
+    const grad = ctx.createLinearGradient(0, 0, 0, FLOOR_TOP);
+    grad.addColorStop(0, '#0a1a2e'); grad.addColorStop(0.3, '#1a2b50');
+    grad.addColorStop(0.6, '#2a4060'); grad.addColorStop(1, '#405878');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, FLOOR_TOP + 5);
+    // More stars, slightly hazy
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    for (let i = 0; i < 30; i++) { const sx = (37 * (i+1) * 11) % W, sy = (37 * (i+1) * 7) % 70; if (Math.sin(frame * 0.03 + i * 1.5) > 0.3) ctx.fillRect(sx, sy, 2, 2); }
+    // Haze/smog layer
+    ctx.fillStyle = 'rgba(80,100,120,0.15)'; ctx.fillRect(0, FLOOR_TOP - 50, W, 50);
+  }
 
   // ============================================================
   // FOOD DRAWING
@@ -926,7 +1509,33 @@
     if (f.type === 'fishbone') { ctx.fillStyle = '#ddd'; ctx.fillRect(fx, fy + bob, 22, 3); for (let i = 0; i < 5; i++) { ctx.fillRect(fx + 2 + i * 4, fy - 4 + bob, 2, 5); ctx.fillRect(fx + 2 + i * 4, fy + 3 + bob, 2, 5); } ctx.fillStyle = '#bbb'; ctx.beginPath(); ctx.arc(fx + 24, fy + 1 + bob, 4, 0, Math.PI * 2); ctx.fill();
     } else if (f.type === 'wrapper') { ctx.fillStyle = '#c0a050'; ctx.fillRect(fx, fy + bob, 18, 12); ctx.fillStyle = '#e0c060'; ctx.fillRect(fx + 2, fy + 2 + bob, 6, 4); ctx.fillStyle = '#a08030'; ctx.fillRect(fx + 10, fy + 6 + bob, 6, 4);
     } else if (f.type === 'banana') { ctx.fillStyle = '#f0d040'; ctx.beginPath(); ctx.ellipse(fx + 10, fy + 4 + bob, 12, 5, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#8b6914'; ctx.fillRect(fx + 20, fy + bob, 3, 3);
-    } else if (f.type === 'can') { ctx.fillStyle = '#c0c0c0'; ctx.fillRect(fx, fy - 2 + bob, 12, 14); ctx.fillStyle = '#e05050'; ctx.fillRect(fx, fy + bob, 12, 8); ctx.fillStyle = '#ddd'; ctx.fillRect(fx + 2, fy - 3 + bob, 8, 2); }
+    } else if (f.type === 'can') { ctx.fillStyle = '#c0c0c0'; ctx.fillRect(fx, fy - 2 + bob, 12, 14); ctx.fillStyle = '#e05050'; ctx.fillRect(fx, fy + bob, 12, 8); ctx.fillStyle = '#ddd'; ctx.fillRect(fx + 2, fy - 3 + bob, 8, 2);
+    } else if (f.type === 'xlb') {
+      // Xiaolongbao - steamed dumpling
+      ctx.fillStyle = '#f5e8d0'; ctx.beginPath(); ctx.arc(fx + 10, fy + 4 + bob, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e8d4b0'; ctx.beginPath(); ctx.arc(fx + 10, fy + 6 + bob, 9, 0, Math.PI); ctx.fill();
+      // Pleats on top
+      ctx.fillStyle = '#d4c0a0';
+      for (let p = 0; p < 5; p++) ctx.fillRect(fx + 5 + p * 2, fy - 2 + bob, 1, 3);
+      ctx.fillStyle = '#c8a878'; ctx.fillRect(fx + 8, fy - 4 + bob, 4, 3);
+      // Steam
+      if (frame % 30 < 20) { ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillRect(fx + 7, fy - 8 + bob - (frame % 10), 2, 3); ctx.fillRect(fx + 12, fy - 10 + bob - (frame % 12), 2, 3); }
+    } else if (f.type === 'firecracker') {
+      // Red firecracker
+      ctx.fillStyle = '#e83030'; ctx.fillRect(fx + 3, fy + bob, 14, 10);
+      ctx.fillStyle = '#cc2020'; ctx.fillRect(fx + 3, fy + 3 + bob, 14, 4);
+      ctx.fillStyle = '#f0c040'; ctx.fillRect(fx + 4, fy + 1 + bob, 3, 2); ctx.fillRect(fx + 12, fy + 1 + bob, 3, 2);
+      // Fuse
+      ctx.strokeStyle = '#888'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(fx + 10, fy + bob); ctx.lineTo(fx + 10, fy - 6 + bob); ctx.stroke();
+      // Sparks
+      if (frame % 16 < 8) { ctx.fillStyle = '#ff0'; ctx.fillRect(fx + 9, fy - 8 + bob, 2, 2); ctx.fillRect(fx + 12, fy - 7 + bob, 2, 2); }
+    } else if (f.type === 'cabbage') {
+      // Chinese cabbage / bok choy
+      ctx.fillStyle = '#f0f0e0'; ctx.fillRect(fx + 5, fy + 2 + bob, 8, 10);
+      ctx.fillStyle = '#4a9c4a'; ctx.beginPath(); ctx.ellipse(fx + 6, fy - 2 + bob, 6, 7, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#3d8c3d'; ctx.beginPath(); ctx.ellipse(fx + 13, fy - 1 + bob, 5, 6, 0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#5aac5a'; ctx.beginPath(); ctx.ellipse(fx + 9, fy - 4 + bob, 4, 5, 0, 0, Math.PI * 2); ctx.fill();
+    }
     if (Math.sin(frame * 0.1 + f.wx) > 0.65) { ctx.fillStyle = '#fff'; ctx.fillRect(fx + 16, fy - 7 + bob, 3, 3); }
   }
 
@@ -948,10 +1557,13 @@
     ctx.fillStyle = '#5dade2'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center'; ctx.fillText('HI', W / 2, 12);
     ctx.fillStyle = '#fff'; ctx.font = 'bold 14px monospace'; ctx.fillText(String(hiScore).padStart(6, '0'), W / 2, 26); ctx.textAlign = 'left';
     const si = Math.floor(worldX / SCENE_W);
-    const sn = si < SCENES.length ? SCENES[si].name : '';
-    if (sn) { ctx.fillStyle = '#f0c040'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'right'; ctx.fillText(sn, W - 100, 20); ctx.textAlign = 'left'; }
+    const sn = si < levelScenes.length ? levelScenes[si].name : '';
+    ctx.fillStyle = '#5dade2'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'right';
+    ctx.fillText('LV' + (currentLevel + 1) + ' ' + LEVEL_NAMES[currentLevel], W - 100, 12); ctx.textAlign = 'left';
+    if (sn) { ctx.fillStyle = '#f0c040'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'right'; ctx.fillText(sn, W - 100, 26); ctx.textAlign = 'left'; }
     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(8, H - 14, W - 16, 10);
-    ctx.fillStyle = '#f0c040'; ctx.fillRect(10, H - 12, (W - 20) * Math.min(1, worldX / WORLD_END), 6);
+    const totalProgress = currentLevel === 0 ? worldX / WORLD_END * 0.5 : 0.5 + worldX / WORLD_END * 0.5;
+    ctx.fillStyle = '#f0c040'; ctx.fillRect(10, H - 12, (W - 20) * Math.min(1, totalProgress), 6);
   }
   function drawHeart(x, y, color) {
     ctx.fillStyle = color; ctx.beginPath();
@@ -967,7 +1579,7 @@
     px(chowderR1, W / 2 - 35, H / 2 - 50, 5);
     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 50, W, 55);
     ctx.fillStyle = '#f0c040'; ctx.font = 'bold 24px monospace'; ctx.textAlign = 'center';
-    ctx.fillText("CHOWDER'S SINGAPORE ADVENTURE", W / 2, 85);
+    ctx.fillText("CHOWDER'S ADVENTURE", W / 2, 85);
     if (playerName) {
       ctx.fillStyle = '#5dade2'; ctx.font = 'bold 14px monospace';
       ctx.fillText('PLAYER: ' + playerName, W / 2, H / 2 + 50);
@@ -991,9 +1603,20 @@
   // UPDATE
   // ============================================================
   function update() {
+    if (gameState === 'levelComplete') {
+      levelCompleteTimer--;
+      if (levelCompleteTimer <= 0) startNextLevel();
+      return;
+    }
     if (gameState !== 'playing') return;
     frame++; worldX += SCROLL_SPEED;
-    if (worldX >= WORLD_END) { gameState = 'win'; stopMusic(); if (score > hiScore) hiScore = score; addToLeaderboard(playerName, score); showLeaderboard = true; return; }
+    if (worldX >= WORLD_END) {
+      if (currentLevel === 0) {
+        gameState = 'levelComplete'; stopMusic(); levelCompleteTimer = 180; return;
+      } else {
+        gameState = 'win'; stopMusic(); if (score > hiScore) hiScore = score; addToLeaderboard(playerName, score); showLeaderboard = true; return;
+      }
+    }
 
     const spd = 3;
     if (keys['ArrowUp'] || keys['w'] || touchKeys.up) player.y = Math.max(FLOOR_TOP + 10, player.y - spd);
@@ -1021,8 +1644,9 @@
           e.hitFlash = 12;
           if (e.hp <= 0) {
             e.alive = false;
-            score += e.isThug ? 200 : 50;
-            particle(ex, e.y - 20, '#f0c040', e.isThug ? '+200' : '+50');
+            const pts = e.enemyType === 'rider' ? 300 : e.isThug ? 200 : e.enemyType === 'cat' ? 75 : 50;
+            score += pts;
+            particle(ex, e.y - 20, '#f0c040', '+' + pts);
             playKO();
             for (let i = 0; i < 6; i++) particles.push({ x: ex + Math.random() * 30 - 10, y: e.y - 10 + Math.random() * 20, col: '#f0c040', txt: '*', life: 18, vy: -3 + Math.random() * 6, vx: -2 + Math.random() * 4 });
           } else {
@@ -1065,12 +1689,12 @@
   function draw() {
     ctx.clearRect(0, 0, W, H);
     if (gameState === 'title') { drawTitle(); return; }
-    drawSky();
+    if (currentLevel === 0) drawSky(); else drawSkyShanghai();
     const si = Math.floor(worldX / SCENE_W);
     for (let i = si - 1; i <= si + 1; i++) {
-      if (i >= 0 && i < SCENES.length) {
+      if (i >= 0 && i < levelScenes.length) {
         const lo = worldX - i * SCENE_W;
-        if (lo > -W && lo < SCENE_W + W) SCENES[i].draw(i);
+        if (lo > -W && lo < SCENE_W + W) levelScenes[i].draw(i);
       }
     }
     drawFloor();
@@ -1105,17 +1729,30 @@
         const e = ent.ref;
         const ex = e.wx - worldX;
         if (ex < -60 || ex > W + 60) continue;
-        const sc = e.isThug ? THUG_S : DOG_S;
-        ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath();
-        ctx.ellipse(ex + 25, e.y + 25, e.isThug ? 30 : 22, e.isThug ? 7 : 5, 0, 0, Math.PI * 2); ctx.fill();
         if (e.hitFlash > 0) { ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(e.hitFlash * 2) * 0.3; }
-        px(dogFrames[e.af], ex, e.y - (e.isThug ? 40 : 25), sc, DOG_COLORS[e.variant]);
+
+        if (e.enemyType === 'cat') {
+          ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath();
+          ctx.ellipse(ex + 20, e.y + 20, 18, 4, 0, 0, Math.PI * 2); ctx.fill();
+          px(catFrames[e.af], ex, e.y - 22, CAT_S, CAT_COLORS[e.variant]);
+        } else if (e.enemyType === 'rider') {
+          ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath();
+          ctx.ellipse(ex + 30, e.y + 30, 32, 7, 0, 0, Math.PI * 2); ctx.fill();
+          px(riderFrames[e.af], ex, e.y - 35, RIDER_S, RIDER_COLORS[e.variant]);
+        } else {
+          const sc = e.isThug ? THUG_S : DOG_S;
+          ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath();
+          ctx.ellipse(ex + 25, e.y + 25, e.isThug ? 30 : 22, e.isThug ? 7 : 5, 0, 0, Math.PI * 2); ctx.fill();
+          px(dogFrames[e.af], ex, e.y - (e.isThug ? 40 : 25), sc, DOG_COLORS[e.variant]);
+        }
         if (e.hitFlash > 0) ctx.restore();
         if (e.isThug) {
-          ctx.fillStyle = '#e74c3c'; ctx.font = 'bold 10px monospace';
-          ctx.fillText('THUG', ex + 10, e.y - 45);
+          const label = e.enemyType === 'rider' ? 'RIDER' : 'THUG';
+          const labelCol = e.enemyType === 'rider' ? '#2080ff' : '#e74c3c';
+          ctx.fillStyle = labelCol; ctx.font = 'bold 10px monospace';
+          ctx.fillText(label, ex + 10, e.y - 45);
           ctx.fillStyle = '#333'; ctx.fillRect(ex + 5, e.y - 40, 50, 5);
-          ctx.fillStyle = '#e74c3c'; ctx.fillRect(ex + 5, e.y - 40, 50 * (e.hp / e.maxHp), 5);
+          ctx.fillStyle = labelCol; ctx.fillRect(ex + 5, e.y - 40, 50 * (e.hp / e.maxHp), 5);
           ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(ex + 5, e.y - 40, 50, 5);
         }
       }
@@ -1128,6 +1765,23 @@
     ctx.globalAlpha = 1;
     drawHUD();
 
+    if (gameState === 'levelComplete') {
+      ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#f0c040'; ctx.font = 'bold 28px monospace';
+      ctx.fillText('LEVEL 1 COMPLETE!', W / 2, H / 2 - 50);
+      ctx.fillStyle = '#5dade2'; ctx.font = 'bold 18px monospace';
+      ctx.fillText('SINGAPORE CLEARED!', W / 2, H / 2 - 15);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 22px monospace';
+      ctx.fillText('NEXT: SHANGHAI', W / 2, H / 2 + 30);
+      ctx.fillStyle = '#888'; ctx.font = '14px monospace';
+      const dots = '.'.repeat(Math.floor(frame / 15) % 4);
+      ctx.fillText('Loading' + dots, W / 2, H / 2 + 65);
+      // Draw Chowder
+      px(chowderFrames[Math.floor(frame / 10) % 2], W / 2 - 35, H / 2 + 80, 4);
+      ctx.textAlign = 'left';
+    }
+
     if (gameState === 'gameover' || gameState === 'win') {
       ctx.fillStyle = 'rgba(0,0,0,0.82)'; ctx.fillRect(0, 0, W, H);
       ctx.textAlign = 'center';
@@ -1138,6 +1792,8 @@
       } else {
         ctx.fillStyle = '#f0c040'; ctx.font = 'bold 30px monospace';
         ctx.fillText('CHOWDER WINS!', W / 2, 42);
+        ctx.fillStyle = '#5dade2'; ctx.font = 'bold 14px monospace';
+        ctx.fillText('ALL LEVELS CLEARED!', W / 2, 58);
       }
 
       // Your score
