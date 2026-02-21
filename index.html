@@ -342,6 +342,9 @@
   // Level 2 music - pentatonic/minor feel (Shanghai)
   const melodyL2 = [76,74,71,69, 67,69,71,74, 76,0,74,71, 69,67,69,0, 71,74,76,79, 76,74,71,69, 67,69,71,0, 74,71,69,0];
   const bassL2 =   [45,0,45,48, 43,0,43,0, 45,0,48,0, 43,0,40,0, 45,0,45,48, 43,0,43,0, 45,0,48,0, 43,0,43,0];
+  // Level 3 music - tarantella/Italian folk feel (Milan)
+  const melodyL3 = [72,74,76,79, 79,76,74,72, 71,74,76,0, 79,76,74,72, 72,74,76,79, 81,79,76,74, 72,74,76,0, 74,72,71,0];
+  const bassL3 =   [48,0,52,0, 48,0,52,0, 47,0,50,0, 47,0,50,0, 45,0,48,0, 45,0,48,0, 43,0,47,0, 43,0,48,0];
   let melodyNotes = melodyL1, bassNotes = bassL1;
   const BPM = 280, BEAT_LEN = 60 / BPM;
   let musicBeatIdx = 0, nextBeatTime = 0;
@@ -672,6 +675,83 @@
   const RIDER_S = 3.5;
 
   // ============================================================
+  // ULTRA FAN SPRITE (Level 3 - AC/Inter ultras)
+  // ============================================================
+  const U1='#222',U2='#444',U3='#ddd',UH='#f0c8a0',UE='#111';
+  const ultraL1 = [
+    [_,_,_,_,_,_,_,_,_,_,_,_,UH,UH,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,UH,UH,UH,UH,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,UH,UE,UH,UH,UE,UH,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,UH,UH,UH,UH,UH,UH,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,UH,U1,UH,UH,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U1,U1,U1,U1,U1,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U1,U2,U1,U1,U1,U2,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U1,U2,U1,U1,U1,U2,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U1,U1,U1,U1,U1,U1,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U1,U1,U1,U1,U1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U1,U3,U1,U3,U1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U2,_,_,_,U2,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U2,U2,_,_,_,U2,U2,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U2,_,_,_,U2,_,_,_,_,_],
+  ];
+  const ultraL2 = [
+    [_,_,_,_,_,_,_,_,_,_,_,_,UH,UH,_,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,UH,UH,UH,UH,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,UH,UE,UH,UH,UE,UH,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,UH,UH,UH,UH,UH,UH,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,_,UH,U1,UH,UH,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U1,U1,U1,U1,U1,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U1,U2,U1,U1,U1,U2,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U1,U2,U1,U1,U1,U2,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U1,U1,U1,U1,U1,U1,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U1,U1,U1,U1,U1,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U1,U3,_,U1,_,U3,U1,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U2,_,_,_,U2,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,_,U2,U2,_,U2,U2,_,_,_,_,_],
+    [_,_,_,_,_,_,_,_,_,U2,U2,_,_,_,U2,U2,_,_,_,_],
+  ];
+  const ultraFrames = [ultraL1, ultraL2];
+  const ULTRA_COLORS = {
+    ac: { [U1]: '#e00020', [U2]: '#111' },    // AC Milan: red+black
+    inter: { [U1]: '#0040a0', [U2]: '#111' },  // Inter: blue+black
+  };
+  const ULTRA_VARIANT_KEYS = ['ac', 'inter'];
+  const ULTRA_S = 4;
+
+  // ============================================================
+  // TRAM SPRITE (Level 3 - Milan street tram, invincible)
+  // ============================================================
+  const T1='#e8a020',T2='#d08810',T3='#f5d060',T4='#333',T5='#888',T6='#aee8ff';
+  const tramL1 = [
+    [_,_,_,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,_],
+    [_,_,T4,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T4,_],
+    [_,T4,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T4],
+    [T4,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T1,T4],
+    [T4,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T1,T4],
+    [T4,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T4],
+    [T4,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T4],
+    [T4,T1,T3,T3,T1,T3,T3,T1,T3,T3,T1,T3,T3,T1,T3,T3,T1,T3,T1,T4],
+    [_,T4,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T4,_],
+    [_,_,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,_,_],
+    [_,_,T5,T4,T5,_,_,_,_,_,_,_,_,_,_,_,T5,T4,T5,_],
+  ];
+  const tramL2 = [
+    [_,_,_,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,_],
+    [_,_,T4,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T4,_],
+    [_,T4,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T4],
+    [T4,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T1,T4],
+    [T4,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T6,T1,T6,T1,T4],
+    [T4,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T4],
+    [T4,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T2,T4],
+    [T4,T1,T3,T3,T1,T3,T3,T1,T3,T3,T1,T3,T3,T1,T3,T3,T1,T3,T1,T4],
+    [_,T4,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T1,T4,_],
+    [_,_,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,_,_],
+    [_,_,_,T5,T4,T5,_,_,_,_,_,_,_,_,_,T5,T4,T5,_,_],
+  ];
+  const tramFrames = [tramL1, tramL2];
+  const TRAM_S = 5;
+
+  // ============================================================
   // CONSTANTS
   // ============================================================
   const FLOOR_TOP = 320, FLOOR_BOT = 440;
@@ -711,8 +791,23 @@
     { name: 'Shanghai Tower', draw: drawSceneSHTower },
     { name: 'Gubei & Hongqiao', draw: drawSceneGubei },
   ];
-  const LEVELS = [SCENES_L1, SCENES_L2];
-  const LEVEL_NAMES = ["SINGAPORE", "SHANGHAI"];
+  const SCENES_L3 = [
+    { name: 'Duomo di Milano', draw: drawSceneDuomo },
+    { name: 'Galleria Vittorio Emanuele', draw: drawSceneGalleria },
+    { name: 'Castello Sforzesco', draw: drawSceneSforzesco },
+    { name: 'Arco della Pace', draw: drawSceneArco },
+    { name: 'Navigli', draw: drawSceneNavigli },
+    { name: 'Brera & Via Montenapoleone', draw: drawSceneBrera },
+    { name: 'Stazione Centrale', draw: drawSceneCentrale },
+    { name: 'San Siro Stadium', draw: drawSceneSanSiro },
+    { name: 'Sant\'Ambrogio', draw: drawSceneSantAmbrogio },
+    { name: 'Bosco Verticale', draw: drawSceneBoscoVerticale },
+    { name: 'Colonne di San Lorenzo', draw: drawSceneColonne },
+    { name: 'Santa Giulia Arena', draw: drawSceneSantaGiulia },
+    { name: 'Assago Forum', draw: drawSceneAssago },
+  ];
+  const LEVELS = [SCENES_L1, SCENES_L2, SCENES_L3];
+  const LEVEL_NAMES = ["SINGAPORE", "SHANGHAI", "MILANO"];
   let currentLevel = 0;
   let levelScenes = LEVELS[0];
   const SCENE_W = 600;
@@ -906,16 +1001,19 @@
 
   let levelCompleteTimer = 0;
 
+  const LEVEL_MELODIES = [melodyL1, melodyL2, melodyL3];
+  const LEVEL_BASSES = [bassL1, bassL2, bassL3];
+
   function startNextLevel() {
-    currentLevel = 1;
-    levelScenes = LEVELS[1];
+    currentLevel++;
+    levelScenes = LEVELS[currentLevel];
     WORLD_END = levelScenes.length * SCENE_W;
-    melodyNotes = melodyL2; bassNotes = bassL2;
+    melodyNotes = LEVEL_MELODIES[currentLevel]; bassNotes = LEVEL_BASSES[currentLevel];
     worldX = 0; frame = 0;
     totalEnemiesSpawned = 0;
     enemies = []; food = []; particles = [];
     nextEnemy = 150; nextFood = 100;
-    player.maxHp = 4; player.hp = player.maxHp;
+    player.maxHp = 3 + currentLevel; player.hp = player.maxHp;
     player.attacking = false; player.atkTimer = 0; player.invTimer = 0;
     levelCompleteTimer = 0;
     gameState = 'playing';
@@ -929,21 +1027,34 @@
   function spawnEnemy() {
     totalEnemiesSpawned++;
     const isL2 = currentLevel === 1;
+    const isL3 = currentLevel === 2;
     const isRider = isL2 && totalEnemiesSpawned % 15 === 0;
     const isCat = isL2 && !isRider && Math.random() < 0.4;
-    const isThug = !isRider && !isCat && totalEnemiesSpawned % 10 === 0;
+    const isTram = isL3 && totalEnemiesSpawned % 12 === 0;
+    const isUltra = isL3 && !isTram && Math.random() < 0.45;
+    const isThug = !isRider && !isCat && !isTram && !isUltra && totalEnemiesSpawned % 10 === 0;
 
-    let spd, hp, enemyType, variant;
+    let spd, hp, enemyType, variant, invincible = false;
 
-    if (isRider) {
+    if (isTram) {
+      enemyType = 'tram';
+      variant = 'orange';
+      spd = 2.5 + Math.random() * 1.5;
+      hp = 9999; invincible = true;
+    } else if (isUltra) {
+      enemyType = 'ultra';
+      variant = ULTRA_VARIANT_KEYS[Math.floor(Math.random() * ULTRA_VARIANT_KEYS.length)];
+      spd = 0.2 + Math.random() * 0.5;
+      hp = 2;
+    } else if (isRider) {
       enemyType = 'rider';
       variant = RIDER_VARIANT_KEYS[Math.floor(Math.random() * RIDER_VARIANT_KEYS.length)];
-      spd = 2.5 + Math.random() * 1.5; // very fast: 2.5-4.0
+      spd = 2.5 + Math.random() * 1.5;
       hp = 3;
     } else if (isCat) {
       enemyType = 'cat';
       variant = CAT_VARIANT_KEYS[Math.floor(Math.random() * CAT_VARIANT_KEYS.length)];
-      spd = 0.5 + Math.random() * 2.0; // random: 0.5-2.5
+      spd = 0.5 + Math.random() * 2.0;
       hp = 1;
     } else if (isThug) {
       enemyType = 'dog';
@@ -964,10 +1075,11 @@
       spd: spd,
       hp: hp,
       maxHp: hp,
-      isThug: isThug || isRider,
+      isThug: isThug || isRider || isUltra || isTram,
       enemyType: enemyType,
       variant: variant,
       hitFlash: 0,
+      invincible: invincible,
     });
     nextEnemy = worldX + 50 + Math.random() * 90;
   }
@@ -975,7 +1087,9 @@
   function spawnFood() {
     const typesL1 = ['fishbone','wrapper','banana','can'];
     const typesL2 = ['fishbone','wrapper','xlb','firecracker','cabbage','xlb'];
-    const types = currentLevel === 0 ? typesL1 : typesL2;
+    const typesL3 = ['fishbone','wrapper','pizza','gelato','spaghetti','pizza','gelato'];
+    const allTypes = [typesL1, typesL2, typesL3];
+    const types = allTypes[currentLevel] || typesL1;
     food.push({
       wx: worldX + W + 60,
       y: FLOOR_TOP + 20 + Math.random() * (FLOOR_BOT - FLOOR_TOP - 20),
@@ -1469,6 +1583,458 @@
   }
 
   // ============================================================
+  // MILAN SKY
+  // ============================================================
+  function drawSkyMilan() {
+    const grad = ctx.createLinearGradient(0, 0, 0, FLOOR_TOP);
+    grad.addColorStop(0, '#1a2a4e'); grad.addColorStop(0.25, '#2a3a6e');
+    grad.addColorStop(0.55, '#6080b8'); grad.addColorStop(1, '#c8a8d0');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, FLOOR_TOP + 5);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    for (let i = 0; i < 20; i++) { const sx = (53 * (i+1) * 9) % W, sy = (53 * (i+1) * 5) % 60; if (Math.sin(frame * 0.035 + i * 2) > 0.4) ctx.fillRect(sx, sy, 2, 2); }
+    // Subtle Olympic rings in sky
+    drawOlympicRings(W - 110, 25, 8, 0.15);
+  }
+
+  // ============================================================
+  // OLYMPIC HELPERS
+  // ============================================================
+  function drawOlympicRings(x, y, r, alpha) {
+    ctx.save(); ctx.globalAlpha = alpha; ctx.lineWidth = 2;
+    const cols = ['#0081C8','#000','#EE334E','#FCB131','#00A651'];
+    const offsets = [0, r*2.2, r*4.4, r*1.1, r*3.3];
+    const rows = [0,0,0,r*1.1,r*1.1];
+    for (let i = 0; i < 5; i++) {
+      ctx.strokeStyle = cols[i]; ctx.beginPath();
+      ctx.arc(x + offsets[i], y + rows[i], r, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function olympicBooth(x, gy) {
+    if (x < -40 || x > W + 40) return;
+    ctx.fillStyle = '#0081C8'; ctx.fillRect(x, gy - 35, 40, 35);
+    ctx.fillStyle = '#fff'; ctx.fillRect(x + 2, gy - 33, 36, 18);
+    drawOlympicRings(x + 10, gy - 23, 4, 0.8);
+    ctx.fillStyle = '#FCB131'; ctx.fillRect(x - 3, gy - 38, 46, 5);
+    // Flag
+    ctx.fillStyle = '#00A651'; ctx.fillRect(x + 15, gy - 52, 2, 16);
+    ctx.fillStyle = '#fff'; ctx.fillRect(x + 17, gy - 52, 12, 8);
+    drawOlympicRings(x + 19, gy - 48, 2, 0.9);
+  }
+
+  // ============================================================
+  // MILAN SCENES
+  // ============================================================
+  function drawSceneDuomo(si) {
+    const off = sceneOffset(si), dx = 200 - off * 0.5;
+    // Main cathedral body
+    ctx.fillStyle = '#e0d8d0'; ctx.fillRect(dx - 60, FLOOR_TOP - 140, 300, 140);
+    // Gothic spires
+    for (let i = 0; i < 9; i++) {
+      const sx = dx - 40 + i * 35;
+      const sh = 50 + Math.sin(i * 0.7) * 30 + (i === 4 ? 60 : 0);
+      ctx.fillStyle = '#d8d0c8'; ctx.fillRect(sx, FLOOR_TOP - 140 - sh, 6, sh);
+      ctx.fillStyle = '#c8c0b8';
+      ctx.beginPath(); ctx.moveTo(sx - 1, FLOOR_TOP - 140 - sh);
+      ctx.lineTo(sx + 3, FLOOR_TOP - 140 - sh - 15);
+      ctx.lineTo(sx + 7, FLOOR_TOP - 140 - sh); ctx.fill();
+    }
+    // Main spire with Madonnina
+    ctx.fillStyle = '#f0c040'; ctx.fillRect(dx + 108, FLOOR_TOP - 260, 3, 10);
+    ctx.beginPath(); ctx.arc(dx + 110, FLOOR_TOP - 262, 4, 0, Math.PI * 2); ctx.fill();
+    // Rose window
+    ctx.fillStyle = '#6080b0'; ctx.beginPath(); ctx.arc(dx + 80, FLOOR_TOP - 100, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#8ca8d0'; ctx.beginPath(); ctx.arc(dx + 80, FLOOR_TOP - 100, 12, 0, Math.PI * 2); ctx.fill();
+    // Gothic arched doors
+    for (let i = 0; i < 5; i++) {
+      const ddx = dx + 10 + i * 50;
+      ctx.fillStyle = '#5c4a3a'; ctx.fillRect(ddx, FLOOR_TOP - 50, 20, 50);
+      ctx.beginPath(); ctx.arc(ddx + 10, FLOOR_TOP - 50, 10, Math.PI, 0); ctx.fill();
+    }
+    // Gothic windows (rows)
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 8; c++) {
+      ctx.fillStyle = '#8898a8'; ctx.fillRect(dx - 45 + c * 35, FLOOR_TOP - 130 + r * 25, 8, 14);
+    }
+    olympicBooth(dx - 100, FLOOR_TOP);
+  }
+
+  function drawSceneGalleria(si) {
+    const off = sceneOffset(si), gx = 150 - off * 0.5;
+    // Grand building facade
+    ctx.fillStyle = '#d8d0c0'; ctx.fillRect(gx, FLOOR_TOP - 130, 350, 130);
+    // Triumphal arch entrance
+    ctx.fillStyle = '#c0b8a8';
+    ctx.beginPath(); ctx.arc(gx + 175, FLOOR_TOP - 80, 50, Math.PI, 0); ctx.fill();
+    ctx.fillRect(gx + 125, FLOOR_TOP - 80, 100, 80);
+    ctx.fillStyle = '#4a3a2a'; ctx.fillRect(gx + 140, FLOOR_TOP - 70, 70, 70);
+    // Glass dome top
+    ctx.fillStyle = 'rgba(150,200,255,0.4)';
+    ctx.beginPath(); ctx.arc(gx + 175, FLOOR_TOP - 130, 40, Math.PI, 0); ctx.fill();
+    // Iron cross pattern on dome
+    ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(gx + 155, FLOOR_TOP - 130); ctx.lineTo(gx + 195, FLOOR_TOP - 130); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx + 175, FLOOR_TOP - 170); ctx.lineTo(gx + 175, FLOOR_TOP - 130); ctx.stroke();
+    // Side windows
+    for (let i = 0; i < 4; i++) {
+      ctx.fillStyle = '#8898a8'; ctx.fillRect(gx + 15 + i * 30, FLOOR_TOP - 110, 12, 22);
+      ctx.fillRect(gx + 240 + i * 30, FLOOR_TOP - 110, 12, 22);
+    }
+    // Statues on top
+    for (let i = 0; i < 5; i++) {
+      ctx.fillStyle = '#b8b0a0'; ctx.fillRect(gx + 50 + i * 65, FLOOR_TOP - 140, 6, 12);
+    }
+    neonSign(gx + 120, FLOOR_TOP - 145, 'GALLERIA V.E. II', '#f0c040');
+    olympicBooth(gx + 400, FLOOR_TOP);
+  }
+
+  function drawSceneSforzesco(si) {
+    const off = sceneOffset(si), cx = 150 - off * 0.5;
+    // Castle walls
+    ctx.fillStyle = '#b08060'; ctx.fillRect(cx, FLOOR_TOP - 100, 400, 100);
+    // Battlements (crenellations)
+    for (let i = 0; i < 20; i++) {
+      ctx.fillStyle = '#a07050';
+      ctx.fillRect(cx + i * 20, FLOOR_TOP - 112, 14, 14);
+    }
+    // Main tower (Filarete Tower)
+    ctx.fillStyle = '#a87850'; ctx.fillRect(cx + 160, FLOOR_TOP - 200, 80, 100);
+    ctx.fillStyle = '#987040';
+    ctx.fillRect(cx + 165, FLOOR_TOP - 210, 70, 14);
+    // Tower battlements
+    for (let i = 0; i < 4; i++) ctx.fillRect(cx + 162 + i * 18, FLOOR_TOP - 222, 12, 14);
+    // Clock
+    ctx.fillStyle = '#f0e8d0'; ctx.beginPath(); ctx.arc(cx + 200, FLOOR_TOP - 170, 14, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#333'; ctx.fillRect(cx + 199, FLOOR_TOP - 180, 2, 12); ctx.fillRect(cx + 198, FLOOR_TOP - 170, 8, 2);
+    // Gate arch
+    ctx.fillStyle = '#5c3a1e'; ctx.fillRect(cx + 175, FLOOR_TOP - 60, 50, 60);
+    ctx.beginPath(); ctx.arc(cx + 200, FLOOR_TOP - 60, 25, Math.PI, 0); ctx.fill();
+    // Windows
+    for (let i = 0; i < 6; i++) {
+      ctx.fillStyle = '#5c4a3a'; ctx.fillRect(cx + 30 + i * 60, FLOOR_TOP - 75, 14, 20);
+    }
+    // Trees in courtyard
+    for (let i = 0; i < 3; i++) {
+      const tx = cx - 40 + i * 240;
+      ctx.fillStyle = '#5c3a1e'; ctx.fillRect(tx, FLOOR_TOP - 40, 4, 40);
+      ctx.fillStyle = '#3d8c3d'; ctx.beginPath(); ctx.arc(tx + 2, FLOOR_TOP - 48, 16, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function drawSceneArco(si) {
+    const off = sceneOffset(si), ax = 250 - off * 0.5;
+    // Arch structure
+    ctx.fillStyle = '#d8d0c0'; ctx.fillRect(ax - 40, FLOOR_TOP - 150, 40, 150);
+    ctx.fillRect(ax + 80, FLOOR_TOP - 150, 40, 150);
+    ctx.fillRect(ax - 50, FLOOR_TOP - 160, 180, 15);
+    // Arch opening
+    ctx.fillStyle = '#d0c8b8';
+    ctx.beginPath(); ctx.arc(ax + 40, FLOOR_TOP - 80, 40, Math.PI, 0); ctx.fill();
+    ctx.fillRect(ax, FLOOR_TOP - 80, 80, 80);
+    ctx.fillStyle = '#6080b0'; ctx.fillRect(ax + 5, FLOOR_TOP - 75, 70, 75);
+    ctx.beginPath(); ctx.arc(ax + 40, FLOOR_TOP - 75, 35, Math.PI, 0); ctx.fill();
+    // Top statues / chariot
+    ctx.fillStyle = '#c8c0b0';
+    ctx.fillRect(ax + 15, FLOOR_TOP - 180, 50, 20);
+    ctx.fillStyle = '#b0a898';
+    ctx.fillRect(ax + 25, FLOOR_TOP - 195, 30, 18);
+    // Olympic flame on top!
+    ctx.fillStyle = '#e05020';
+    ctx.beginPath(); ctx.moveTo(ax + 40, FLOOR_TOP - 220);
+    ctx.quadraticCurveTo(ax + 50, FLOOR_TOP - 200, ax + 40, FLOOR_TOP - 195);
+    ctx.quadraticCurveTo(ax + 30, FLOOR_TOP - 200, ax + 40, FLOOR_TOP - 220); ctx.fill();
+    ctx.fillStyle = '#f0c040';
+    ctx.beginPath(); ctx.moveTo(ax + 40, FLOOR_TOP - 215);
+    ctx.quadraticCurveTo(ax + 46, FLOOR_TOP - 203, ax + 40, FLOOR_TOP - 198);
+    ctx.quadraticCurveTo(ax + 34, FLOOR_TOP - 203, ax + 40, FLOOR_TOP - 215); ctx.fill();
+    // Flicker
+    if (frame % 8 < 4) { ctx.fillStyle = '#ff8020'; ctx.beginPath(); ctx.arc(ax + 40 + Math.sin(frame * 0.2) * 3, FLOOR_TOP - 210, 4, 0, Math.PI * 2); ctx.fill(); }
+    // Olympic rings nearby
+    drawOlympicRings(ax - 60, FLOOR_TOP - 40, 6, 0.7);
+    // Park with trees
+    for (let i = 0; i < 4; i++) {
+      const tx = ax - 120 + i * 100;
+      if (tx < -30 || tx > W + 30) continue;
+      ctx.fillStyle = '#5c3a1e'; ctx.fillRect(tx, FLOOR_TOP - 45, 4, 45);
+      ctx.fillStyle = '#4a9c4a'; ctx.beginPath(); ctx.arc(tx + 2, FLOOR_TOP - 55, 18, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  function drawSceneNavigli(si) {
+    const off = sceneOffset(si), nx = 50 - off * 0.5;
+    // Canal water
+    ctx.fillStyle = '#3a7a5a'; ctx.fillRect(0, FLOOR_TOP - 30, W, 30);
+    ctx.fillStyle = '#4a8a6a';
+    for (let i = 0; i < W; i += 20) ctx.fillRect(i, FLOOR_TOP - 28 + Math.sin(frame * 0.07 + i * 0.06) * 2, 12, 2);
+    // Canal walls
+    ctx.fillStyle = '#888'; ctx.fillRect(0, FLOOR_TOP - 34, W, 4);
+    // Colorful buildings along canal
+    const colors = ['#e8a870','#d4c090','#c09070','#e0c0a0','#b89878','#d0b080','#c8a068'];
+    for (let i = 0; i < 7; i++) {
+      const bx = nx + i * 100;
+      if (bx > W + 80 || bx + 70 < -80) continue;
+      const h = 70 + (i % 3) * 20;
+      ctx.fillStyle = colors[i]; ctx.fillRect(bx, FLOOR_TOP - 34 - h, 70, h);
+      // Windows
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) {
+        ctx.fillStyle = Math.sin(frame * 0.01 + i + r) > 0 ? '#ffd86e' : '#4a5a3a';
+        ctx.fillRect(bx + 10 + c * 35, FLOOR_TOP - 30 - h + 10 + r * 22, 12, 14);
+      }
+      // Balconies
+      ctx.fillStyle = '#777'; ctx.fillRect(bx + 5, FLOOR_TOP - 34 - h + 50, 60, 2);
+    }
+    // Boats
+    ctx.fillStyle = '#8b4513'; ctx.fillRect(nx + 200, FLOOR_TOP - 24 + Math.sin(frame * 0.04) * 2, 30, 6);
+    olympicBooth(nx + 500, FLOOR_TOP - 34);
+  }
+
+  function drawSceneBrera(si) {
+    const off = sceneOffset(si), bx = 60 - off * 0.5;
+    // Pinacoteca di Brera building
+    ctx.fillStyle = '#d0c0a8'; ctx.fillRect(bx, FLOOR_TOP - 120, 250, 120);
+    // Courtyard arches
+    for (let i = 0; i < 6; i++) {
+      const ax2 = bx + 15 + i * 38;
+      ctx.fillStyle = '#b0a088'; ctx.beginPath(); ctx.arc(ax2 + 10, FLOOR_TOP - 50, 16, Math.PI, 0); ctx.fill();
+      ctx.fillRect(ax2, FLOOR_TOP - 50, 20, 50);
+      ctx.fillStyle = '#4a3a2a'; ctx.fillRect(ax2 + 3, FLOOR_TOP - 45, 14, 45);
+    }
+    // Upper windows
+    for (let i = 0; i < 8; i++) {
+      ctx.fillStyle = '#8898a8'; ctx.fillRect(bx + 15 + i * 28, FLOOR_TOP - 105, 10, 16);
+    }
+    // Via Montenapoleone - luxury shops
+    const shopCols = ['#333','#2a2a2a','#1a1a1a','#282828'];
+    const brands = ['GUCCI', 'PRADA', 'ARMANI', 'VERSACE'];
+    for (let i = 0; i < 4; i++) {
+      const sx = bx + 300 + i * 95;
+      if (sx > W + 80 || sx < -80) continue;
+      ctx.fillStyle = shopCols[i]; ctx.fillRect(sx, FLOOR_TOP - 70, 75, 70);
+      ctx.fillStyle = '#f0e8d0'; ctx.fillRect(sx + 5, FLOOR_TOP - 45, 65, 30);
+      ctx.fillStyle = '#f0c040'; ctx.font = 'bold 7px monospace';
+      ctx.fillText(brands[i], sx + 10, FLOOR_TOP - 52);
+    }
+  }
+
+  function drawSceneCentrale(si) {
+    const off = sceneOffset(si), sx = 100 - off * 0.5;
+    // Massive station facade
+    ctx.fillStyle = '#c8c0b0'; ctx.fillRect(sx, FLOOR_TOP - 150, 500, 150);
+    // Grand arch entrance
+    ctx.fillStyle = '#a8a098';
+    ctx.beginPath(); ctx.arc(sx + 250, FLOOR_TOP - 80, 60, Math.PI, 0); ctx.fill();
+    ctx.fillRect(sx + 190, FLOOR_TOP - 80, 120, 80);
+    ctx.fillStyle = '#333'; ctx.fillRect(sx + 200, FLOOR_TOP - 70, 100, 70);
+    // Side arches
+    for (let i = 0; i < 2; i++) {
+      const axx = sx + 70 + i * 300;
+      ctx.fillStyle = '#a8a098'; ctx.beginPath(); ctx.arc(axx, FLOOR_TOP - 50, 30, Math.PI, 0); ctx.fill();
+      ctx.fillRect(axx - 30, FLOOR_TOP - 50, 60, 50);
+      ctx.fillStyle = '#444'; ctx.fillRect(axx - 20, FLOOR_TOP - 40, 40, 40);
+    }
+    // Towers at sides
+    ctx.fillStyle = '#b8b0a0'; ctx.fillRect(sx - 10, FLOOR_TOP - 180, 35, 35);
+    ctx.fillRect(sx + 475, FLOOR_TOP - 180, 35, 35);
+    // Top ornament
+    ctx.fillStyle = '#a0988a'; ctx.fillRect(sx + 100, FLOOR_TOP - 160, 300, 14);
+    // Sign
+    ctx.fillStyle = '#333'; ctx.fillRect(sx + 180, FLOOR_TOP - 165, 140, 12);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace'; ctx.fillText('STAZIONE CENTRALE', sx + 190, FLOOR_TOP - 156);
+    // Columns
+    for (let i = 0; i < 10; i++) {
+      ctx.fillStyle = '#b0a898'; ctx.fillRect(sx + 20 + i * 48, FLOOR_TOP - 148, 6, 148);
+    }
+    olympicBooth(sx + 520, FLOOR_TOP);
+  }
+
+  function drawSceneSanSiro(si) {
+    const off = sceneOffset(si), sx = 150 - off * 0.5;
+    // Stadium bowl shape
+    ctx.fillStyle = '#7a8a9a'; ctx.fillRect(sx, FLOOR_TOP - 100, 350, 100);
+    // Tiers
+    ctx.fillStyle = '#8a9aaa'; ctx.fillRect(sx - 10, FLOOR_TOP - 110, 370, 14);
+    ctx.fillStyle = '#6a7a8a'; ctx.fillRect(sx - 15, FLOOR_TOP - 120, 380, 14);
+    // Support towers (4 cylindrical towers)
+    for (let i = 0; i < 4; i++) {
+      const tx = sx - 20 + i * 130;
+      ctx.fillStyle = '#8898a8'; ctx.fillRect(tx, FLOOR_TOP - 140, 15, 140);
+      ctx.fillStyle = '#7888a0'; ctx.beginPath(); ctx.arc(tx + 7, FLOOR_TOP - 140, 8, 0, Math.PI * 2); ctx.fill();
+    }
+    // Green pitch inside
+    ctx.fillStyle = '#4a9c4a'; ctx.fillRect(sx + 30, FLOOR_TOP - 60, 290, 40);
+    // Pitch lines
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+    ctx.strokeRect(sx + 35, FLOOR_TOP - 58, 280, 36);
+    ctx.beginPath(); ctx.moveTo(sx + 175, FLOOR_TOP - 58); ctx.lineTo(sx + 175, FLOOR_TOP - 22); ctx.stroke();
+    ctx.beginPath(); ctx.arc(sx + 175, FLOOR_TOP - 40, 12, 0, Math.PI * 2); ctx.stroke();
+    // AC Milan / Inter flags
+    ctx.fillStyle = '#e00020'; ctx.fillRect(sx + 50, FLOOR_TOP - 130, 12, 8);
+    ctx.fillStyle = '#111'; ctx.fillRect(sx + 56, FLOOR_TOP - 130, 6, 8);
+    ctx.fillStyle = '#0040a0'; ctx.fillRect(sx + 280, FLOOR_TOP - 130, 12, 8);
+    ctx.fillStyle = '#111'; ctx.fillRect(sx + 286, FLOOR_TOP - 130, 6, 8);
+    // Stadium label
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace'; ctx.fillText('SAN SIRO', sx + 140, FLOOR_TOP - 95);
+    drawOlympicRings(sx + 160, FLOOR_TOP - 85, 5, 0.5);
+  }
+
+  function drawSceneSantAmbrogio(si) {
+    const off = sceneOffset(si), ax = 200 - off * 0.5;
+    // Basilica facade
+    ctx.fillStyle = '#c0a888'; ctx.fillRect(ax, FLOOR_TOP - 100, 200, 100);
+    // Arched loggia (portico with arches)
+    for (let i = 0; i < 4; i++) {
+      const axx = ax + 20 + i * 45;
+      ctx.fillStyle = '#a89878'; ctx.beginPath(); ctx.arc(axx + 10, FLOOR_TOP - 45, 18, Math.PI, 0); ctx.fill();
+      ctx.fillRect(axx, FLOOR_TOP - 45, 20, 45);
+      ctx.fillStyle = '#5c4a3a'; ctx.fillRect(axx + 3, FLOOR_TOP - 40, 14, 40);
+    }
+    // Bell tower
+    ctx.fillStyle = '#b09070'; ctx.fillRect(ax + 210, FLOOR_TOP - 170, 30, 170);
+    ctx.fillStyle = '#a08060';
+    for (let i = 0; i < 3; i++) ctx.fillRect(ax + 215, FLOOR_TOP - 160 + i * 30, 20, 14);
+    // Cross on top
+    ctx.fillStyle = '#c0a050'; ctx.fillRect(ax + 223, FLOOR_TOP - 180, 4, 12);
+    ctx.fillRect(ax + 219, FLOOR_TOP - 176, 12, 4);
+    // Rose window
+    ctx.fillStyle = '#6a8ab0'; ctx.beginPath(); ctx.arc(ax + 100, FLOOR_TOP - 75, 14, 0, Math.PI * 2); ctx.fill();
+    // Trees
+    for (let i = 0; i < 3; i++) {
+      const tx = ax - 60 + i * 180;
+      if (tx < -30 || tx > W + 30) continue;
+      ctx.fillStyle = '#5c3a1e'; ctx.fillRect(tx, FLOOR_TOP - 40, 4, 40);
+      ctx.fillStyle = '#3d8c3d'; ctx.beginPath(); ctx.arc(tx + 2, FLOOR_TOP - 50, 16, 0, Math.PI * 2); ctx.fill();
+    }
+    olympicBooth(ax - 100, FLOOR_TOP);
+  }
+
+  function drawSceneBoscoVerticale(si) {
+    const off = sceneOffset(si), bx = 200 - off * 0.5;
+    // Two towers
+    for (let t = 0; t < 2; t++) {
+      const tx = bx + t * 100;
+      const h = t === 0 ? 250 : 200;
+      ctx.fillStyle = '#c0c8c0'; ctx.fillRect(tx, FLOOR_TOP - h, 60, h);
+      // Balconies with trees/bushes
+      for (let r = 0; r < Math.floor(h / 20); r++) {
+        ctx.fillStyle = '#888'; ctx.fillRect(tx - 4, FLOOR_TOP - h + 10 + r * 20, 68, 3);
+        // Greenery on balconies
+        const gc = r % 3 === 0 ? '#2d7c2d' : r % 3 === 1 ? '#3d8c3d' : '#4a9c4a';
+        ctx.fillStyle = gc;
+        ctx.beginPath(); ctx.arc(tx + 5, FLOOR_TOP - h + 8 + r * 20, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(tx + 25, FLOOR_TOP - h + 6 + r * 20, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(tx + 50, FLOOR_TOP - h + 7 + r * 20, 7, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    // UnipolSai Tower nearby
+    ctx.fillStyle = '#6080a0'; ctx.fillRect(bx + 250, FLOOR_TOP - 220, 35, 220);
+    ctx.fillStyle = '#7090b0';
+    for (let r = 0; r < 14; r++) ctx.fillRect(bx + 252, FLOOR_TOP - 215 + r * 15, 31, 8);
+    // Curved top
+    ctx.fillStyle = '#6080a0'; ctx.beginPath(); ctx.arc(bx + 267, FLOOR_TOP - 220, 18, Math.PI, 0); ctx.fill();
+    // Esselunga supermarket
+    ctx.fillStyle = '#e8e0d0'; ctx.fillRect(bx - 120, FLOOR_TOP - 50, 100, 50);
+    ctx.fillStyle = '#e02020'; ctx.fillRect(bx - 115, FLOOR_TOP - 55, 90, 10);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 6px monospace'; ctx.fillText('esselunga', bx - 110, FLOOR_TOP - 47);
+    olympicBooth(bx + 320, FLOOR_TOP);
+  }
+
+  function drawSceneColonne(si) {
+    const off = sceneOffset(si), cx = 150 - off * 0.5;
+    // Row of Roman columns
+    for (let i = 0; i < 8; i++) {
+      const colx = cx + 40 + i * 50;
+      if (colx < -20 || colx > W + 20) continue;
+      // Column base
+      ctx.fillStyle = '#b0a898'; ctx.fillRect(colx - 2, FLOOR_TOP - 10, 14, 10);
+      // Column shaft
+      ctx.fillStyle = '#c8c0b0'; ctx.fillRect(colx, FLOOR_TOP - 110, 10, 100);
+      // Column capital (Corinthian style)
+      ctx.fillStyle = '#b8b0a0'; ctx.fillRect(colx - 3, FLOOR_TOP - 116, 16, 8);
+      ctx.fillStyle = '#a8a090'; ctx.fillRect(colx - 1, FLOOR_TOP - 120, 12, 6);
+      // Fluting on shaft
+      ctx.fillStyle = 'rgba(0,0,0,0.05)';
+      ctx.fillRect(colx + 3, FLOOR_TOP - 108, 1, 96);
+      ctx.fillRect(colx + 6, FLOOR_TOP - 108, 1, 96);
+    }
+    // Architrave connecting columns
+    ctx.fillStyle = '#b0a898'; ctx.fillRect(cx + 35, FLOOR_TOP - 124, 400, 6);
+    // Basilica di San Lorenzo behind
+    ctx.fillStyle = '#a89878'; ctx.fillRect(cx + 450, FLOOR_TOP - 100, 150, 100);
+    ctx.fillStyle = '#988868';
+    ctx.beginPath(); ctx.arc(cx + 525, FLOOR_TOP - 100, 50, Math.PI, 0); ctx.fill();
+    // Dome
+    ctx.fillStyle = '#8a7858'; ctx.beginPath(); ctx.arc(cx + 525, FLOOR_TOP - 120, 30, Math.PI, 0); ctx.fill();
+    // Cross on dome
+    ctx.fillStyle = '#c0a050'; ctx.fillRect(cx + 523, FLOOR_TOP - 155, 4, 12);
+    ctx.fillRect(cx + 519, FLOOR_TOP - 151, 12, 4);
+    // Park grass area
+    ctx.fillStyle = '#4a8c4a'; ctx.fillRect(cx, FLOOR_TOP - 3, 440, 3);
+    olympicBooth(cx - 30, FLOOR_TOP);
+  }
+
+  function drawSceneSantaGiulia(si) {
+    const off = sceneOffset(si), ax = 100 - off * 0.5;
+    // Modern arena - curved roof
+    ctx.fillStyle = '#6080a0'; ctx.fillRect(ax, FLOOR_TOP - 80, 400, 80);
+    ctx.fillStyle = '#5070a0';
+    ctx.beginPath(); ctx.ellipse(ax + 200, FLOOR_TOP - 80, 210, 50, 0, Math.PI, 0); ctx.fill();
+    // Glass panels
+    ctx.fillStyle = 'rgba(150,200,255,0.3)';
+    for (let i = 0; i < 10; i++) ctx.fillRect(ax + 20 + i * 38, FLOOR_TOP - 75, 28, 60);
+    // ICE HOCKEY label
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('SANTA GIULIA ARENA', ax + 200, FLOOR_TOP - 90);
+    ctx.fillStyle = '#0081C8'; ctx.font = 'bold 8px monospace';
+    ctx.fillText('ICE HOCKEY', ax + 200, FLOOR_TOP - 100);
+    ctx.textAlign = 'left';
+    // Olympic rings on building
+    drawOlympicRings(ax + 170, FLOOR_TOP - 40, 8, 0.6);
+    // Olympic flags
+    for (let i = 0; i < 3; i++) {
+      const fx = ax - 30 + i * 200;
+      if (fx < -20 || fx > W + 20) continue;
+      ctx.fillStyle = '#888'; ctx.fillRect(fx, FLOOR_TOP - 60, 3, 60);
+      ctx.fillStyle = '#fff'; ctx.fillRect(fx + 3, FLOOR_TOP - 58, 18, 12);
+      drawOlympicRings(fx + 5, FLOOR_TOP - 52, 2, 0.9);
+    }
+    olympicBooth(ax + 430, FLOOR_TOP);
+    olympicBooth(ax - 60, FLOOR_TOP);
+  }
+
+  function drawSceneAssago(si) {
+    const off = sceneOffset(si), ax = 120 - off * 0.5;
+    // Assago Forum - large dome structure
+    ctx.fillStyle = '#808898'; ctx.fillRect(ax, FLOOR_TOP - 70, 450, 70);
+    ctx.fillStyle = '#707888';
+    ctx.beginPath(); ctx.ellipse(ax + 225, FLOOR_TOP - 70, 230, 80, 0, Math.PI, 0); ctx.fill();
+    // Metal ribs on dome
+    ctx.strokeStyle = '#606878'; ctx.lineWidth = 1;
+    for (let i = 0; i < 12; i++) {
+      const ang = Math.PI + (i / 11) * Math.PI;
+      const rx = ax + 225 + Math.cos(ang) * 220;
+      const ry = FLOOR_TOP - 70 + Math.sin(ang) * 75;
+      ctx.beginPath(); ctx.moveTo(ax + 225, FLOOR_TOP - 70); ctx.lineTo(rx, ry); ctx.stroke();
+    }
+    // Entrance
+    ctx.fillStyle = '#5a6a7a'; ctx.fillRect(ax + 180, FLOOR_TOP - 50, 90, 50);
+    ctx.fillStyle = 'rgba(150,200,255,0.4)'; ctx.fillRect(ax + 185, FLOOR_TOP - 48, 80, 35);
+    // ICE SKATING label
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('ASSAGO FORUM', ax + 225, FLOOR_TOP - 110);
+    ctx.fillStyle = '#FCB131'; ctx.font = 'bold 8px monospace';
+    ctx.fillText('FIGURE SKATING', ax + 225, FLOOR_TOP - 120);
+    ctx.textAlign = 'left';
+    drawOlympicRings(ax + 195, FLOOR_TOP - 95, 8, 0.6);
+    // Olympic pop-ups on sides
+    olympicBooth(ax - 50, FLOOR_TOP);
+    olympicBooth(ax + 480, FLOOR_TOP);
+    // Esselunga nearby
+    ctx.fillStyle = '#e8e0d0'; ctx.fillRect(ax + 530, FLOOR_TOP - 45, 80, 45);
+    ctx.fillStyle = '#e02020'; ctx.fillRect(ax + 535, FLOOR_TOP - 50, 70, 8);
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 6px monospace'; ctx.fillText('esselunga', ax + 540, FLOOR_TOP - 42);
+  }
+
+  // ============================================================
   // FLOOR & SKY
   // ============================================================
   function drawFloor() {
@@ -1535,6 +2101,43 @@
       ctx.fillStyle = '#4a9c4a'; ctx.beginPath(); ctx.ellipse(fx + 6, fy - 2 + bob, 6, 7, -0.3, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#3d8c3d'; ctx.beginPath(); ctx.ellipse(fx + 13, fy - 1 + bob, 5, 6, 0.3, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#5aac5a'; ctx.beginPath(); ctx.ellipse(fx + 9, fy - 4 + bob, 4, 5, 0, 0, Math.PI * 2); ctx.fill();
+    } else if (f.type === 'pizza') {
+      // Pizza slice
+      ctx.fillStyle = '#e8c840'; ctx.beginPath(); ctx.moveTo(fx + 10, fy - 6 + bob);
+      ctx.lineTo(fx + 22, fy + 10 + bob); ctx.lineTo(fx - 2, fy + 10 + bob); ctx.fill();
+      ctx.fillStyle = '#e05030'; // sauce
+      ctx.beginPath(); ctx.moveTo(fx + 10, fy - 2 + bob);
+      ctx.lineTo(fx + 18, fy + 8 + bob); ctx.lineTo(fx + 2, fy + 8 + bob); ctx.fill();
+      ctx.fillStyle = '#f0e8c0'; // cheese blobs
+      ctx.beginPath(); ctx.arc(fx + 8, fy + 3 + bob, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(fx + 13, fy + 5 + bob, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#4a8c4a'; ctx.fillRect(fx + 10, fy + 1 + bob, 2, 2); // basil
+    } else if (f.type === 'gelato') {
+      // Gelato cone
+      ctx.fillStyle = '#d4a050'; ctx.beginPath(); ctx.moveTo(fx + 5, fy - 2 + bob);
+      ctx.lineTo(fx + 15, fy - 2 + bob); ctx.lineTo(fx + 10, fy + 12 + bob); ctx.fill();
+      // Cross pattern on cone
+      ctx.strokeStyle = '#c09040'; ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(fx + 6, fy + bob); ctx.lineTo(fx + 14, fy + 8 + bob); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(fx + 14, fy + bob); ctx.lineTo(fx + 6, fy + 8 + bob); ctx.stroke();
+      // Scoops
+      ctx.fillStyle = '#f5a0b0'; ctx.beginPath(); ctx.arc(fx + 8, fy - 5 + bob, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#a0d850'; ctx.beginPath(); ctx.arc(fx + 14, fy - 4 + bob, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f0e0b0'; ctx.beginPath(); ctx.arc(fx + 10, fy - 9 + bob, 4, 0, Math.PI * 2); ctx.fill();
+    } else if (f.type === 'spaghetti') {
+      // Spaghetti with meatballs
+      ctx.fillStyle = '#f0e0b0'; ctx.beginPath(); ctx.ellipse(fx + 10, fy + 4 + bob, 11, 7, 0, 0, Math.PI * 2); ctx.fill();
+      // Noodle lines
+      ctx.strokeStyle = '#e8d090'; ctx.lineWidth = 1;
+      for (let n = 0; n < 4; n++) {
+        ctx.beginPath(); ctx.moveTo(fx + 2 + n * 4, fy + bob);
+        ctx.quadraticCurveTo(fx + 4 + n * 4, fy + 6 + bob, fx + 6 + n * 4, fy + 2 + bob); ctx.stroke();
+      }
+      // Sauce
+      ctx.fillStyle = '#c83020'; ctx.beginPath(); ctx.ellipse(fx + 10, fy + 2 + bob, 6, 4, 0, 0, Math.PI * 2); ctx.fill();
+      // Meatballs
+      ctx.fillStyle = '#8b4513'; ctx.beginPath(); ctx.arc(fx + 6, fy + 2 + bob, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(fx + 14, fy + 1 + bob, 3, 0, Math.PI * 2); ctx.fill();
     }
     if (Math.sin(frame * 0.1 + f.wx) > 0.65) { ctx.fillStyle = '#fff'; ctx.fillRect(fx + 16, fy - 7 + bob, 3, 3); }
   }
@@ -1562,7 +2165,8 @@
     ctx.fillText('LV' + (currentLevel + 1) + ' ' + LEVEL_NAMES[currentLevel], W - 100, 12); ctx.textAlign = 'left';
     if (sn) { ctx.fillStyle = '#f0c040'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'right'; ctx.fillText(sn, W - 100, 26); ctx.textAlign = 'left'; }
     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(8, H - 14, W - 16, 10);
-    const totalProgress = currentLevel === 0 ? worldX / WORLD_END * 0.5 : 0.5 + worldX / WORLD_END * 0.5;
+    const lvFrac = 1 / LEVELS.length;
+    const totalProgress = currentLevel * lvFrac + (worldX / WORLD_END) * lvFrac;
     ctx.fillStyle = '#f0c040'; ctx.fillRect(10, H - 12, (W - 20) * Math.min(1, totalProgress), 6);
   }
   function drawHeart(x, y, color) {
@@ -1611,7 +2215,7 @@
     if (gameState !== 'playing') return;
     frame++; worldX += SCROLL_SPEED;
     if (worldX >= WORLD_END) {
-      if (currentLevel === 0) {
+      if (currentLevel < LEVELS.length - 1) {
         gameState = 'levelComplete'; stopMusic(); levelCompleteTimer = 90; return;
       } else {
         gameState = 'win'; stopMusic(); if (score > hiScore) hiScore = score; addToLeaderboard(playerName, score); showLeaderboard = true; return;
@@ -1638,13 +2242,13 @@
       const dx = PLAYER_X + 20 - ex, dy = player.y - e.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (player.attacking && player.atkTimer > 10 && dist < (e.isThug ? 80 : 70)) {
+      if (player.attacking && player.atkTimer > 10 && dist < (e.isThug ? 80 : 70) && !e.invincible) {
         if (e.hitFlash <= 0) {
           e.hp--;
           e.hitFlash = 12;
           if (e.hp <= 0) {
             e.alive = false;
-            const pts = e.enemyType === 'rider' ? 300 : e.isThug ? 200 : e.enemyType === 'cat' ? 75 : 50;
+            const pts = e.enemyType === 'ultra' ? 200 : e.enemyType === 'rider' ? 300 : e.isThug ? 200 : e.enemyType === 'cat' ? 75 : 50;
             score += pts;
             particle(ex, e.y - 20, '#f0c040', '+' + pts);
             playKO();
@@ -1657,7 +2261,8 @@
         continue;
       }
 
-      if (dist < (e.isThug ? 50 : 45) && player.invTimer <= 0 && !player.attacking) {
+      const hitDist = e.enemyType === 'tram' ? 65 : e.isThug ? 50 : 45;
+      if (dist < hitDist && player.invTimer <= 0 && !player.attacking) {
         player.hp--;
         player.invTimer = 60;
         particle(PLAYER_X, player.y - 30, '#e74c3c', '-1 HP');
@@ -1689,7 +2294,7 @@
   function draw() {
     ctx.clearRect(0, 0, W, H);
     if (gameState === 'title') { drawTitle(); return; }
-    if (currentLevel === 0) drawSky(); else drawSkyShanghai();
+    if (currentLevel === 0) drawSky(); else if (currentLevel === 1) drawSkyShanghai(); else drawSkyMilan();
     const si = Math.floor(worldX / SCENE_W);
     for (let i = si - 1; i <= si + 1; i++) {
       if (i >= 0 && i < levelScenes.length) {
@@ -1731,7 +2336,18 @@
         if (ex < -60 || ex > W + 60) continue;
         if (e.hitFlash > 0) { ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(e.hitFlash * 2) * 0.3; }
 
-        if (e.enemyType === 'cat') {
+        if (e.enemyType === 'tram') {
+          ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.beginPath();
+          ctx.ellipse(ex + 50, e.y + 30, 52, 8, 0, 0, Math.PI * 2); ctx.fill();
+          px(tramFrames[e.af], ex, e.y - 25, TRAM_S);
+          // Overhead wire
+          ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(ex + 50, e.y - 35); ctx.lineTo(ex + 50, e.y - 80); ctx.stroke();
+        } else if (e.enemyType === 'ultra') {
+          ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath();
+          ctx.ellipse(ex + 25, e.y + 28, 26, 6, 0, 0, Math.PI * 2); ctx.fill();
+          px(ultraFrames[e.af], ex, e.y - 30, ULTRA_S, ULTRA_COLORS[e.variant]);
+        } else if (e.enemyType === 'cat') {
           ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath();
           ctx.ellipse(ex + 20, e.y + 20, 18, 4, 0, 0, Math.PI * 2); ctx.fill();
           px(catFrames[e.af], ex, e.y - 22, CAT_S, CAT_COLORS[e.variant]);
@@ -1747,8 +2363,8 @@
         }
         if (e.hitFlash > 0) ctx.restore();
         if (e.isThug) {
-          const label = e.enemyType === 'rider' ? 'RIDER' : 'THUG';
-          const labelCol = e.enemyType === 'rider' ? '#2080ff' : '#e74c3c';
+          const label = e.enemyType === 'tram' ? 'TRAM!' : e.enemyType === 'ultra' ? 'ULTRA' : e.enemyType === 'rider' ? 'RIDER' : 'THUG';
+          const labelCol = e.enemyType === 'tram' ? '#e8a020' : e.enemyType === 'ultra' ? (e.variant === 'ac' ? '#e00020' : '#0040a0') : e.enemyType === 'rider' ? '#2080ff' : '#e74c3c';
           ctx.fillStyle = labelCol; ctx.font = 'bold 10px monospace';
           ctx.fillText(label, ex + 10, e.y - 45);
           ctx.fillStyle = '#333'; ctx.fillRect(ex + 5, e.y - 40, 50, 5);
@@ -1769,15 +2385,15 @@
       ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fillRect(0, 0, W, H);
       ctx.textAlign = 'center';
       ctx.fillStyle = '#f0c040'; ctx.font = 'bold 28px monospace';
-      ctx.fillText('LEVEL 1 COMPLETE!', W / 2, H / 2 - 50);
+      ctx.fillText('LEVEL ' + (currentLevel + 1) + ' COMPLETE!', W / 2, H / 2 - 50);
       ctx.fillStyle = '#5dade2'; ctx.font = 'bold 18px monospace';
-      ctx.fillText('SINGAPORE CLEARED!', W / 2, H / 2 - 15);
+      ctx.fillText(LEVEL_NAMES[currentLevel] + ' CLEARED!', W / 2, H / 2 - 15);
       ctx.fillStyle = '#fff'; ctx.font = 'bold 22px monospace';
-      ctx.fillText('NEXT: SHANGHAI', W / 2, H / 2 + 30);
+      const nextLvName = currentLevel + 1 < LEVEL_NAMES.length ? LEVEL_NAMES[currentLevel + 1] : '???';
+      ctx.fillText('NEXT: ' + nextLvName, W / 2, H / 2 + 30);
       ctx.fillStyle = '#888'; ctx.font = '14px monospace';
       const dots = '.'.repeat(Math.floor(frame / 15) % 4);
       ctx.fillText('Loading' + dots, W / 2, H / 2 + 65);
-      // Draw Chowder
       px(chowderFrames[Math.floor(frame / 10) % 2], W / 2 - 35, H / 2 + 80, 4);
       ctx.textAlign = 'left';
     }
